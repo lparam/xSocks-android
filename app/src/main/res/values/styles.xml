@@ -1,0 +1,14 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryColorDark</item>
+        <item name="colorAccent">@color/accentColor</item>
+
+        <!-- MaterialDrawer specific values -->
+        <item name="background">@color/background_light</item>
+        <item name="material_drawer_background">@color/drawer_background_light</item>
+        <item name="material_drawer_primary_icon">@color/material_drawer_icons</item>
+    </style>
+
+</resources>

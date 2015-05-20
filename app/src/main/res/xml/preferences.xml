@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+            android:title="@string/proxy_cat">
+
+        <io.github.xsocks.preferences.ProfileEditTextPreference
+                android:defaultValue="Default"
+                android:key="profileName"
+                android:summary="@string/profile_summary"
+                android:title="@string/profile">
+        </io.github.xsocks.preferences.ProfileEditTextPreference>
+        <io.github.xsocks.preferences.SummaryEditTextPreference
+                android:defaultValue=""
+                android:key="proxy"
+                android:summary="@string/proxy_summary"
+                android:title="@string/proxy">
+        </io.github.xsocks.preferences.SummaryEditTextPreference>
+        <io.github.xsocks.preferences.SummaryEditTextPreference
+                android:inputType="number"
+                android:defaultValue="1073"
+                android:key="remotePort"
+                android:summary="@string/remote_port_summary"
+                android:title="@string/remote_port">
+        </io.github.xsocks.preferences.SummaryEditTextPreference>
+        <io.github.xsocks.preferences.PasswordEditTextPreference
+                android:inputType="textPassword"
+                android:defaultValue=""
+                android:key="sitekey"
+                android:summary="@string/sitekey_summary"
+                android:title="@string/sitekey">
+        </io.github.xsocks.preferences.PasswordEditTextPreference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="@string/feature_cat">
+
+        <io.github.xsocks.preferences.SummaryListPreference
+                android:defaultValue="all"
+                android:key="route"
+                android:entries="@array/route_entry"
+                android:entryValues="@array/route_value"
+                android:summary="@string/route_list_summary"
+                android:title="@string/route_list">
+        </io.github.xsocks.preferences.SummaryListPreference>
+        <CheckBoxPreference
+                android:key="isUdpDns"
+                android:defaultValue="false"
+                android:summary="@string/udp_dns_summary"
+                android:title="@string/udp_dns">
+        </CheckBoxPreference>
+        <CheckBoxPreference
+                android:key="isAutoConnect"
+                android:summary="@string/auto_connect_summary"
+                android:title="@string/auto_connect">
+        </CheckBoxPreference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

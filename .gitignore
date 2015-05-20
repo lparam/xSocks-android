@@ -1,0 +1,45 @@
+*.swp
+*.o
+*.a
+*.so
+.ycm_extra_conf.pyc
+
+# built application files
+#*.apk
+#*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+out/
+gen/
+lib/
+obj/
+
+# Local configuration file (sdk path, etc)
+.idea
+.navigation
+.gradle
+local.properties
+ant.properties
+project.properties
+build.xml
+build/
+*.iml
+proguard-project.txt
+
+/libs
+/app/src/main/assets/x86/*
+/app/src/main/assets/armeabi-v7a/*
+/app/src/main/jniLibs/*
+/jni/x86/
+/jni/armeabi-v7a/
+
+.gradle
+gradle/
+gradlew*

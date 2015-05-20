@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:textStyle="bold"
+        android:title="@string/about"
+        android:elevation="4dp"/>
+
+    <FrameLayout
+        android:layout_below="@id/toolbar"
+        android:id="@+id/frame_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_horizontal_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/aboutIcon"
+                android:layout_width="@dimen/aboutImage"
+                android:layout_height="@dimen/aboutImage"
+                android:layout_gravity="center"
+                android:src="@mipmap/ic_launcher"/>
+
+            <TextView
+                android:id="@+id/aboutVersion"
+                android:textSize="@dimen/aboutTextSizeSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:gravity="center"
+                android:textColor="@color/about_libraries_text_openSource"
+                tools:text="About version"/>
+
+            <View
+                android:id="@+id/aboutDivider"
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_marginTop="4dp"
+                android:background="@color/about_libraries_dividerDark_openSource"
+                />
+
+            <TextView
+                android:id="@+id/aboutDescription"
+                android:textSize="@dimen/aboutTextSizeSmall"
+                android:textStyle="normal"
+                android:padding="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:textColor="@color/about"
+                tools:text="About description"/>
+        </LinearLayout>
+    </FrameLayout>
+</RelativeLayout>
