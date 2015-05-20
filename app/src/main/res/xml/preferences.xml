@@ -8,27 +8,31 @@
                 android:defaultValue="Default"
                 android:key="profileName"
                 android:summary="@string/profile_summary"
-                android:title="@string/profile">
+                android:title="@string/profile"
+                android:singleLine="true">
         </io.github.xsocks.preferences.ProfileEditTextPreference>
         <io.github.xsocks.preferences.SummaryEditTextPreference
                 android:defaultValue=""
                 android:key="proxy"
                 android:summary="@string/proxy_summary"
-                android:title="@string/proxy">
+                android:title="@string/proxy"
+                android:singleLine="true">
         </io.github.xsocks.preferences.SummaryEditTextPreference>
         <io.github.xsocks.preferences.SummaryEditTextPreference
                 android:inputType="number"
                 android:defaultValue="1073"
                 android:key="remotePort"
                 android:summary="@string/remote_port_summary"
-                android:title="@string/remote_port">
+                android:title="@string/remote_port"
+                android:singleLine="true">
         </io.github.xsocks.preferences.SummaryEditTextPreference>
         <io.github.xsocks.preferences.PasswordEditTextPreference
                 android:inputType="textPassword"
                 android:defaultValue=""
                 android:key="sitekey"
                 android:summary="@string/sitekey_summary"
-                android:title="@string/sitekey">
+                android:title="@string/sitekey"
+                android:singleLine="true">
         </io.github.xsocks.preferences.PasswordEditTextPreference>
 
     </PreferenceCategory>
