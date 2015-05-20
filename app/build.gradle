@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
 
-try {
-    apply from: 'signing.gradle'
-} catch (ex) {
+if(file('../sign.gradle').exists()) {
+    apply from: '../sign.gradle'
+} else {
+    ogger.error('no such file: ../sign.gradle')
 }
 
 android {
@@ -16,38 +17,22 @@ android {
         versionCode 115
         versionName '1.1.5'
     }
+    lintOptions {
+        abortOnError true
+        disable 'MissingTranslation'
+    }
     buildTypes {
-        debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-DEBUG"
-            try {
-                signingConfig signingConfigs.debug
-            } catch (ex) {
-            }
-            minifyEnabled false
-        }
         release {
-            try {
-                signingConfig signingConfigs.release
-            } catch (ex) {
-            }
+            signingConfig signingConfigs.release
             zipAlignEnabled true
             minifyEnabled true
-
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-
-/*        applicationVariants.all { variant ->
+        applicationVariants.all { variant ->
             variant.outputs.each { output ->
-                def fileName
-                if (variant.buildType.name == "release") {
-                    fileName = "$project.buildDir/outputs/apk/" + "Xsocks-V" + defaultConfig.versionName + ".apk"
-                } else {
-                    fileName = "$project.buildDir/outputs/apk/" + "Xsocks-V" + defaultConfig.versionName + "-beta.apk"
-                }
-                output.outputFile = new File(fileName)
+                appendVersionNameVersionCode(variant, output, defaultConfig)
             }
-        }*/
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -58,6 +43,15 @@ android {
     }
     productFlavors {
     }
+}
+
+def appendVersionNameVersionCode(variant, output, defaultConfig) {
+    def versionName = defaultConfig.versionName
+    if(variant.buildType.name == android.buildTypes.debug.name) {
+        versionName += "-beta"
+    }
+    def file = output.outputFile
+    output.outputFile = new File(file.parent, "Xsocks.apk".replace(".apk", "-v" + versionName + ".apk"))
 }
 
 dependencies {
@@ -75,16 +69,3 @@ dependencies {
     compile 'commons-net:commons-net:3.3'
     compile 'dnsjava:dnsjava:2.1.7'
 }
-
-task clearApk(type: Delete) {
-    delete '../release/' + POM_ARTIFACT_ID + '_' + android.defaultConfig.versionName + '.apk'
-}
-
-task makeApk(type: Copy) {
-    from('build/outputs/apk/')
-    into('../release/')
-    include('app-debug.apk')
-    rename('app-debug.apk', POM_ARTIFACT_ID + '_' + android.defaultConfig.versionName + '.apk')
-}
-
-makeApk.dependsOn(clearApk, build)
