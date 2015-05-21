@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="title">#EEE</color>
     <color name="tool_title">@android:color/white</color>
-    <color name="about">#727272</color>
-    <color name="about_libraries_dividerDark_openSource">#AAA</color>
-    <color name="about_libraries_dividerLight_openSource">#DADADA</color>
-    <color name="about_libraries_text_openSource">#727272</color>
+
+    <color name="about_description">#727272</color>
+    <color name="about_dividerDark">#AAA</color>
+    <color name="about_dividerLight">#DADADA</color>
+    <color name="about_text">#727272</color>
 
     <color name="sk_material_green500">#4caf50</color>
     <color name="sk_material_green700">#388e3c</color>
@@ -20,12 +20,9 @@
     <color name="primaryColor">@color/sk_material_green500</color>
     <color name="primaryColorDark">@color/sk_material_green700</color>
 
-    <color name="drawer_background_light">#ffeeeeee</color>
     <color name="background_light">#ffe2e2e2</color>
-
+    <color name="drawer_background_light">#ffeeeeee</color>
     <color name="material_drawer_icons">#ff6a6a6a</color>
-
-    <color name="button_click_background">#4dffffff</color>
 
 
 </resources>
