@@ -3,8 +3,10 @@ all: app/src/main/jniLibs/armeabi/libsystem.so
 .PHONY: clean
 
 clean:
+	$(ANDROID_NDK_HOME)/ndk-build clean
 	rm -rf libs
 	rm -rf app/src/main/jniLibs
+	rm -rf jni/xsocks/xsocks-android-i686
 	rm -rf jni/xsocks/xsocks-android-armv7-a
 
 app/src/main/jniLibs/armeabi/libsystem.so: jni/system.cpp jni/Android.mk
@@ -21,7 +23,7 @@ app/src/main/jniLibs/armeabi/libsystem.so: jni/system.cpp jni/Android.mk
 	fi ;\
 	popd ;\
 	pushd jni ;\
-	$(ANDROID_NDK_HOME)/ndk-build NDK_LOG=1 V=1 || exit 1 ;\
+	$(ANDROID_NDK_HOME)/ndk-build NDK_LOG=1 V=0 || exit 1 ;\
 	popd ;\
 	rm -rf app/src/main/assets/x86 ;\
 	rm -rf app/src/main/assets/armeabi-v7a ;\
