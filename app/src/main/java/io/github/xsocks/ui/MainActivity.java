@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setLogo(R.drawable.ic_stat_xsocks);
+        toolbar.setLogo(R.drawable.ic_logo);
 
         switchButton = (Switch) toolbar.findViewById(R.id.switchButton);
         switchButton.setOnCheckedChangeListener(this);
@@ -225,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 .build();
 
         result.getListView().setVerticalScrollBarEnabled(false);
-        toolbar.setNavigationIcon(R.drawable.ic_drawer_light);
 
         prefsFragment = new PrefsFragment();
         getFragmentManager().beginTransaction().replace(R.id.content, prefsFragment).commit();
