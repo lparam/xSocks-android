@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
+    <style name="AppTheme.DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
         <item name="spinBars">false</item>
         <item name="color">@android:color/white</item>
     </style>
@@ -17,9 +17,11 @@
         <item name="colorPrimaryDark">@color/primaryColorDark</item>
         <item name="colorAccent">@color/accentColor</item>
 
-        <item name="material_drawer_background">@color/drawer_background_light</item>
+        <!-- MaterialDrawer specific values -->
         <item name="background">@color/background_light</item>
-        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+        <item name="material_drawer_background">@color/drawer_background_light</item>
+
+        <item name="drawerArrowStyle">@style/AppTheme.DrawerArrowStyle</item>
 
     </style>
 

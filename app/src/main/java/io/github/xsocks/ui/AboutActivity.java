@@ -36,16 +36,7 @@ public class AboutActivity extends AppCompatActivity {
                 upArrow.setColorFilter(getResources().getColor(android.R.color.white), PorterDuff.Mode.SRC_IN);
             }
             ab.setHomeAsUpIndicator(upArrow);
-
-            String title = getString(R.string.about);
-
             ab.setDisplayHomeAsUpEnabled(true);
-            if (TextUtils.isEmpty(title)) {
-                ab.setDisplayShowTitleEnabled(false);
-            } else {
-                ab.setDisplayShowTitleEnabled(true);
-                ab.setTitle(title);
-            }
         }
 
         TextView aboutVersion = (TextView) findViewById(R.id.aboutVersion);

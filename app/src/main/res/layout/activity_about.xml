@@ -10,8 +10,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:textStyle="bold"
-        android:title="@string/about"
-        android:elevation="4dp"/>
+        android:title="@string/about"/>
 
     <FrameLayout
         android:layout_below="@id/toolbar"
@@ -43,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:gravity="center"
-                android:textColor="@color/about_libraries_text_openSource"
+                android:textColor="@color/about_text"
                 tools:text="About version"/>
 
             <View
@@ -51,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:layout_marginTop="4dp"
-                android:background="@color/about_libraries_dividerDark_openSource"
+                android:background="@color/about_dividerDark"
                 />
 
             <TextView
@@ -62,7 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
-                android:textColor="@color/about"
+                android:textColor="@color/about_description"
                 tools:text="About description"/>
         </LinearLayout>
     </FrameLayout>

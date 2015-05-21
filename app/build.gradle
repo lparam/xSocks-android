@@ -4,7 +4,7 @@ apply plugin: 'me.tatarka.retrolambda'
 if(file('../sign.gradle').exists()) {
     apply from: '../sign.gradle'
 } else {
-    ogger.error('no such file: ../sign.gradle')
+    logger.error('no such file: ../sign.gradle')
 }
 
 android {
@@ -14,8 +14,8 @@ android {
         applicationId "io.github.xsocks"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 116
-        versionName '1.1.6'
+        versionCode 117
+        versionName '1.1.7'
     }
     lintOptions {
         abortOnError true
