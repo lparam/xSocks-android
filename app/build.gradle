@@ -4,7 +4,7 @@ apply plugin: 'me.tatarka.retrolambda'
 if(file('../sign.gradle').exists()) {
     apply from: '../sign.gradle'
 } else {
-    ogger.error('no such file: ../sign.gradle')
+    logger.error('no such file: ../sign.gradle')
 }
 
 android {
