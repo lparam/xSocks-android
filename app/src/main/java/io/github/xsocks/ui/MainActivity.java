@@ -339,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                                     Snackbar.with(MainActivity.this)
                                             .text(String.format(getString(R.string.vpn_error), m))
                                             .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                                            .actionLabel(R.string.error));
+                                            .swipeToDismiss(false));
                         }
                         prefsFragment.setPreferenceEnabled(true);
                         break;
@@ -474,9 +474,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             SnackbarManager.show(
                     Snackbar.with(this)
                             .text("There are no email applications installed.")
+                            .textColor(Color.RED)
                             .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                            .actionLabel(R.string.error)
-                            .actionColor(Color.RED));
+                            .swipeToDismiss(false));
         }
     }
 
@@ -640,8 +640,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     Snackbar.with(this)
                             .text(msg)
                             .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                            .actionLabel(R.string.error)
-                            .actionColor(Color.RED));
+                            .swipeToDismiss(false));
             return true;
         }
         return false;
@@ -667,9 +666,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         Snackbar.with(this)
                                 .text(getString(R.string.port_alert))
                                 .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                                .actionLabel(R.string.error)
-                                .swipeToDismiss(false)
-                                .actionColor(Color.RED));
+                                .swipeToDismiss(false));
                 return false;
             }
         } catch (Exception ex) {
@@ -677,7 +674,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     Snackbar.with(this)
                             .text(getString(R.string.port_alert))
                             .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                            .actionLabel(R.string.error));
+                            .swipeToDismiss(false));
             return false;
         }
         return true;
