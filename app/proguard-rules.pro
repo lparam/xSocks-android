@@ -30,3 +30,12 @@
 
 # rxjava
 -dontwarn rx.internal.util.unsafe.*
+
+# snackbar
+-dontwarn com.nispok.snackbar.*
+
+# materialdrawer
+-dontwarn com.mikepenz.materialdrawer.*
+
+# iconics
+-dontwarn com.mikepenz.iconics.*
