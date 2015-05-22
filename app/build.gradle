@@ -65,7 +65,7 @@ dependencies {
         transitive = true
     }
     compile 'com.nispok:snackbar:2.10.8'
-    compile 'io.realm:realm-android:0.80.2'
+    compile 'io.realm:realm-android:0.80.3'
     compile 'commons-net:commons-net:3.3'
     compile 'dnsjava:dnsjava:2.1.7'
 }
