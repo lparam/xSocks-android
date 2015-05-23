@@ -13,7 +13,7 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
 * Set environment variable `ANDROID_HOME`
 * Set environment variable `ANDROID_NDK_HOME`
 * Create your key following the instructions at http://developer.android.com/guide/publishing/app-signing.html#cert
-* Create your sign.gradle file like:
+* Create your sign.gradle file like this
 ```bash
     android {
         signingConfigs {
@@ -26,6 +26,7 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
         }
     }
 ```
+* Invoke the instructions
 ```bash
     git submodule update --init
     make
