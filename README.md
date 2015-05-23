@@ -7,19 +7,30 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
 * JDK 1.8+
 * Android SDK r22+
 * Android NDK r9+
-* Android Studio 1.0+
 
 ### BUILD
 
 * Set environment variable `ANDROID_HOME`
 * Set environment variable `ANDROID_NDK_HOME`
-* Build native binaries
+* Create your key following the instructions at http://developer.android.com/guide/publishing/app-signing.html#cert
+* Create your sign.gradle file like:
+```bash
+    android {
+        signingConfigs {
+            release {
+                storeFile file('/home/user/keystore/android.key')
+                    storePassword "password"
+                    keyAlias 'Android App Key'
+                    keyPassword "password"
+            }
+        }
+    }
+```
 ```bash
     git submodule update --init
     make
+    gradle clean :app:generateReleaseSources assembleRelease
 ```
-* Import the project in Android Studio
-* Make Project in Android Studio
 
 ### LICENSE
 
