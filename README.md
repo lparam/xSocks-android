@@ -29,7 +29,7 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
 ```bash
     git submodule update --init
     make
-    gradle clean :app:generateReleaseSources assembleRelease
+    gradle clean assembleRelease
 ```
 
 ### LICENSE
