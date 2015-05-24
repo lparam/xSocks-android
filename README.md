@@ -7,6 +7,7 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
 * JDK 1.8+
 * Android SDK r22+
 * Android NDK r9+
+* Android Studio 1.0+ (optional)
 
 ### BUILD
 
@@ -26,12 +27,20 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
         }
     }
 ```
-* Invoke the instructions
+* Build native binaries
 ```bash
     git submodule update --init
     make
+```
+
+#### Gradle Build
+```bash
     gradle clean assembleRelease
 ```
+
+#### Android Studio
+* Import the project in Android Studio
+* Make Project in Android Studio
 
 ### LICENSE
 
