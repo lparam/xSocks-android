@@ -23,7 +23,11 @@ android {
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            try {
+                signingConfig signingConfigs.release
+            } catch (ex) {
+                logger.error('signing error: ' + ex)
+            }
             zipAlignEnabled true
             minifyEnabled true
             shrinkResources true
