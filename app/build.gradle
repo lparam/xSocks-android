@@ -48,6 +48,11 @@ android {
     }
     productFlavors {
     }
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
 }
 
 def appendVersionNameVersionCode(variant, output, defaultConfig) {
@@ -61,7 +66,7 @@ def appendVersionNameVersionCode(variant, output, defaultConfig) {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'io.reactivex:rxjava-async-util:0.21.0'
@@ -70,7 +75,6 @@ dependencies {
         transitive = true
     }
     compile 'com.nispok:snackbar:2.10.8'
-    compile 'io.realm:realm-android:0.80.3'
     compile 'commons-net:commons-net:3.3'
     compile 'dnsjava:dnsjava:2.1.7'
     compile 'com.google.code.gson:gson:2.3.1'
