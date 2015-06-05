@@ -28,6 +28,7 @@ public class ProfileManager {
     public ProfileManager(final Context context, SharedPreferences settings) {
         this.context = context;
         this.settings = settings;
+        profiles = reloadAll();
     }
 
     private Profile loadFromPreferences(Profile profile) {
@@ -75,7 +76,7 @@ public class ProfileManager {
 
     public List<Profile> getAllProfile() {
         profiles = reloadAll();
-        return profiles.getProfiles();
+        return profiles == null ? null : profiles.getProfiles();
     }
 
     private Profiles reloadAll() {
@@ -106,7 +107,7 @@ public class ProfileManager {
     public Profile firstCreate() {
         Profile profile = new Profile();
         profile = loadFromPreferences(profile);
-        int nextId = profiles.getMaxId() + 1;
+        int nextId = profiles == null ? 1 : profiles.getMaxId() + 1;
         if (nextId > 1) return profile;
         profile.setId(nextId);
         createProfile(profile);
@@ -148,7 +149,7 @@ public class ProfileManager {
     }
 
     public Profile getProfile(int id) {
-        return profiles.getProfile(id);
+        return profiles == null ? null : profiles.getProfile(id);
     }
 
     public void delProfile(int id) {
@@ -170,8 +171,7 @@ public class ProfileManager {
     }
 
     public Profile reload(int id) {
-        saveAll();
+        save();
         return load(id);
     }
-
 }

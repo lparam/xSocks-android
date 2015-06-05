@@ -2,6 +2,7 @@ package io.github.xsocks.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Profiles {
@@ -10,6 +11,10 @@ public class Profiles {
 
     public List<Profile> getProfiles() {
         return profiles;
+    }
+
+    public Profiles() {
+        profiles = new ArrayList<>();
     }
 
     public void remove(int id) {
