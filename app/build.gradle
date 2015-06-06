@@ -14,8 +14,8 @@ android {
         applicationId "io.github.xsocks"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 117
-        versionName '1.1.7'
+        versionCode 120
+        versionName '1.2.0'
     }
     lintOptions {
         abortOnError true
@@ -66,7 +66,7 @@ def appendVersionNameVersionCode(variant, output, defaultConfig) {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'io.reactivex:rxjava-async-util:0.21.0'
