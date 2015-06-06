@@ -14,8 +14,8 @@ android {
         applicationId "io.github.xsocks"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 117
-        versionName '1.1.7'
+        versionCode 120
+        versionName '1.2.0'
     }
     lintOptions {
         abortOnError true
@@ -23,9 +23,14 @@ android {
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            try {
+                signingConfig signingConfigs.release
+            } catch (ex) {
+                logger.error('signing error: ' + ex)
+            }
             zipAlignEnabled true
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         applicationVariants.all { variant ->
@@ -43,6 +48,11 @@ android {
     }
     productFlavors {
     }
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
 }
 
 def appendVersionNameVersionCode(variant, output, defaultConfig) {
@@ -56,16 +66,14 @@ def appendVersionNameVersionCode(variant, output, defaultConfig) {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'io.reactivex:rxjava-async-util:0.21.0'
-    compile 'eu.chainfire:libsuperuser:1.0.0.201504231659'
     compile('com.mikepenz.materialdrawer:library:2.9.7@aar') {
         transitive = true
     }
     compile 'com.nispok:snackbar:2.10.8'
-    compile 'io.realm:realm-android:0.80.2'
     compile 'commons-net:commons-net:3.3'
     compile 'dnsjava:dnsjava:2.1.7'
     compile 'com.google.code.gson:gson:2.3.1'

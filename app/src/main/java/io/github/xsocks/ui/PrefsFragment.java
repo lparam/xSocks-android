@@ -7,7 +7,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import io.github.xsocks.R;
-import io.github.xsocks.database.Profile;
+import io.github.xsocks.model.Profile;
 import io.github.xsocks.preferences.PasswordEditTextPreference;
 import io.github.xsocks.preferences.ProfileEditTextPreference;
 import io.github.xsocks.preferences.SummaryEditTextPreference;

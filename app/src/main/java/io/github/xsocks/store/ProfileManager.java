@@ -1,23 +1,34 @@
-package io.github.xsocks.database;
+package io.github.xsocks.store;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import io.github.xsocks.model.Profile;
+import io.github.xsocks.model.Profiles;
 import io.github.xsocks.utils.Constants;
-import io.realm.Realm;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
 
 public class ProfileManager {
-
     private SharedPreferences settings;
     private final Context context;
     private String TAG = "XSOCKS";
+    private Profiles profiles;
+    private String filename = "profiles.json";
+
 
     public ProfileManager(final Context context, SharedPreferences settings) {
         this.context = context;
         this.settings = settings;
+        profiles = reloadAll();
     }
 
     private Profile loadFromPreferences(Profile profile) {
@@ -63,80 +74,95 @@ public class ProfileManager {
         edit.apply();
     }
 
+    public List<Profile> getAllProfile() {
+        profiles = reloadAll();
+        return profiles == null ? null : profiles.getProfiles();
+    }
+
+    private Profiles reloadAll() {
+        try {
+            FileInputStream fis = context.openFileInput(filename);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
+            }
+            String json = sb.toString();
+            Gson gson = new Gson();
+            return gson.fromJson(json, Profiles.class);
+
+        } catch (IOException e) {
+            return new Profiles();
+        }
+    }
+
+    private void createProfile(Profile profile) {
+        profiles.addProfile(profile);
+        saveAll();
+        profiles = reloadAll();
+    }
+
     public Profile firstCreate() {
-        final Realm realm = Realm.getInstance(context);
         Profile profile = new Profile();
         profile = loadFromPreferences(profile);
-        int nextId = (int) (realm.where(Profile.class).maximumInt("id") + 1);
+        int nextId = profiles == null ? 1 : profiles.getMaxId() + 1;
         if (nextId > 1) return profile;
         profile.setId(nextId);
-        realm.beginTransaction();
-        Profile realmProfile = realm.copyToRealm(profile);
-        realm.commitTransaction();
+        createProfile(profile);
         setPreferences(profile);
-        return realmProfile;
+        return profile;
     }
 
     public Profile create() {
-        final Realm realm = Realm.getInstance(context);
-        realm.beginTransaction();
         Profile profile = new Profile();
-        int nextId = (int) (realm.where(Profile.class).maximumInt("id") + 1);
+        int nextId = profiles.getMaxId() + 1;
         profile.setId(nextId);
-        Profile realmProfile = realm.copyToRealm(profile);
-        realm.commitTransaction();
+        createProfile(profile);
         setPreferences(profile);
-        return realmProfile;
+        return profile;
+    }
+
+    private void saveAll() {
+        FileOutputStream outputStream;
+
+        try {
+            Gson gson = new Gson();
+            String json = gson.toJson(profiles);
+            outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(json.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            Log.e(TAG, "save", e);
+        }
     }
 
     public Profile save() {
-        final Realm realm = Realm.getInstance(context);
         int id = settings.getInt(Constants.Key.profileId, -1);
-        Profile profile = getProfile(id);
+        Profile profile = profiles.getProfile(id);
         if (profile != null) {
-            realm.beginTransaction();
             profile = loadFromPreferences(profile);
-            realm.commitTransaction();
+            saveAll();
         }
         return profile;
     }
 
-    public RealmResults<Profile> getAllProfile() {
-        final Realm realm = Realm.getInstance(context);
-        final RealmQuery<Profile> query = realm.where(Profile.class);
-        return query.findAll();
-    }
-
     public Profile getProfile(int id) {
-        try {
-            final Realm realm = Realm.getInstance(context);
-            final RealmQuery<Profile> query = realm.where(Profile.class);
-            query.equalTo("id", id);
-            return query.findFirst();
-
-        } catch (Exception ex) {
-            Log.e(TAG, "getProfile", ex);
-            return null;
-        }
+        return profiles == null ? null : profiles.getProfile(id);
     }
 
-    public boolean delProfile(int id) {
+    public void delProfile(int id) {
         try {
-            final Realm realm = Realm.getInstance(context);
-            final RealmQuery<Profile> query = realm.where(Profile.class);
-            realm.beginTransaction();
-            RealmResults<Profile> result = query.equalTo("id", id).findAll();
-            result.clear();
-            realm.commitTransaction();
-            return true;
+            profiles.remove(id);
+            saveAll();
         } catch (Exception ex) {
             Log.e(TAG, "getProfile", ex);
-            return false;
         }
     }
 
     public Profile load(int id) {
-        Profile profile = getProfile(id);
+        Profile profile = profiles.getProfile(id);
         if (profile == null) {
             profile = create();
         }
@@ -148,5 +174,4 @@ public class ProfileManager {
         save();
         return load(id);
     }
-
 }

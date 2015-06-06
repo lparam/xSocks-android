@@ -45,19 +45,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import io.github.xsocks.R;
 import io.github.xsocks.aidl.IXsocksService;
 import io.github.xsocks.aidl.IXsocksServiceCallback;
-import io.github.xsocks.database.Profile;
-import io.github.xsocks.database.ProfileManager;
+import io.github.xsocks.model.Profile;
 import io.github.xsocks.service.XsocksVpnService;
+import io.github.xsocks.store.ProfileManager;
 import io.github.xsocks.utils.ConfigUtils;
 import io.github.xsocks.utils.Console;
 import io.github.xsocks.utils.Constants;
 import io.github.xsocks.utils.Utils;
-import io.realm.RealmResults;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.util.async.Async;
@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private ArrayList<IDrawerItem> getProfileList() {
         ArrayList<IDrawerItem> items = new ArrayList<>();
-        RealmResults<Profile> profiles = profileManager.getAllProfile();
+        List<Profile> profiles = profileManager.getAllProfile();
         if (profiles != null) {
             for (Profile profile : profiles) {
                 ProfileDrawerItem item = new ProfileDrawerItem()
@@ -441,8 +441,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private void delProfile(int id) {
         profileManager.delProfile(id);
-        RealmResults<Profile> profiles = profileManager.getAllProfile();
-        int profileId = profiles != null && profiles.size() > 0 ? profiles.first().getId() : -1;
+        List<Profile> profiles = profileManager.getAllProfile();
+        int profileId = profiles != null && profiles.size() > 0 ? profiles.get(0).getId() : -1;
         currentProfile = profileManager.load(profileId);
         updateAdapter();
         prefsFragment.updatePreferenceScreen(currentProfile);
