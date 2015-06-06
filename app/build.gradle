@@ -70,7 +70,6 @@ dependencies {
     compile 'io.reactivex:rxjava:1.0.10'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'io.reactivex:rxjava-async-util:0.21.0'
-    compile 'eu.chainfire:libsuperuser:1.0.0.201504231659'
     compile('com.mikepenz.materialdrawer:library:2.9.7@aar') {
         transitive = true
     }
