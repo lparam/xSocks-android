@@ -44,7 +44,7 @@ A [xsocks](https://github.com/lparam/xsocks) client for Android.
 
 ### LICENSE
 
-Copyright (C) 2015 Ken <ken.i18n@gmail.com>
+Copyright (C) 2015 lparam
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

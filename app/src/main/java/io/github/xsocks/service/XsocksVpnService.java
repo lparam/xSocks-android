@@ -134,7 +134,7 @@ public class XsocksVpnService extends VpnService {
     }
 
     private void startDnsTunnel() {
-        String cmd = String.format("%sxforwarder -l 0.0.0.0:%d -t 8.8.8.8:53 "
+        String cmd = String.format("%sxforwarder -l 0.0.0.0:%d -d 8.8.8.8:53 "
                         + "-s %s:%d "
                         + "-k %s "
                         + "-p %sxforwarder.pid",

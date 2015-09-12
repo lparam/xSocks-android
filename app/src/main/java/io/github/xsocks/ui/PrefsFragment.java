@@ -19,12 +19,14 @@ public class PrefsFragment extends PreferenceFragment {
             Constants.Key.proxy,
             Constants.Key.remotePort,
             Constants.Key.localPort,
-            Constants.Key.sitekey};
+            Constants.Key.sitekey
+    };
 
     public static String[] FEATURE_PREFS = {
             Constants.Key.route,
             Constants.Key.isUdpDns,
-            Constants.Key.isAutoConnect};
+            Constants.Key.isAutoConnect
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
