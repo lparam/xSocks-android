@@ -1,3 +1,10 @@
+v1.2.1 (2015-9-12)
+-----------
+* Change: update 3rd library to latest
+* Change: update appcompat
+* Change: update xsocks's arguments
+
+
 v1.2.0 (2015-6-07)
 -----------
 * Change: json instead of realm for profile store 
