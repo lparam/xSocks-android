@@ -1,3 +1,8 @@
+v1.2.2 (2015-9-16)
+-----------
+* Hotfix: crypto initialization
+
+
 v1.2.1 (2015-9-12)
 -----------
 * Change: update 3rd library to latest
@@ -7,7 +12,7 @@ v1.2.1 (2015-9-12)
 
 v1.2.0 (2015-6-07)
 -----------
-* Change: json instead of realm for profile store 
+* Change: json instead of realm for profile store
 * Change: Remove libsuperuser
 
 
