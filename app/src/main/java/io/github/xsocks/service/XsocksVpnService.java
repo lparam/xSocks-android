@@ -18,8 +18,10 @@ import android.util.Log;
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.http.conn.util.InetAddressUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Locale;
 
 import io.github.xsocks.BuildConfig;
@@ -233,6 +235,51 @@ public class XsocksVpnService extends VpnService {
         }
     }
 
+    private void route_bypass_internal(Builder builder) {
+        String line;
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(this.getResources().openRawResource(R.raw.internal)));
+        try {
+            while ((line = reader.readLine()) != null) {
+                final String[] route = line.split("/");
+                if (route.length == 2) {
+                    builder.addRoute(route[0], Integer.parseInt(route[1]));
+                }
+            }
+        } catch (final Throwable t) {
+            Log.e(TAG, "", t);
+        } finally {
+            try {
+                reader.close();
+            } catch (final IOException ioe) {
+                // ignore
+            }
+        }
+    }
+
+    private void route_bypass(Builder builder) {
+        String line;
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(this.getResources().openRawResource(R.raw.bypass)));
+
+        try {
+            while ((line = reader.readLine()) != null) {
+                final String[] route = line.split("/");
+                if (route.length == 2) {
+                    builder.addRoute(route[0], Integer.parseInt(route[1]));
+                }
+            }
+        } catch (final Throwable t) {
+            Log.e(TAG, "", t);
+        } finally {
+            try {
+                reader.close();
+            } catch (final IOException pIOException) {
+                // ignore
+            }
+        }
+    }
+
     private void startVpn(){
         //android.os.Debug.waitForDebugger();
         int VPN_MTU = 1500;
@@ -241,6 +288,7 @@ public class XsocksVpnService extends VpnService {
         builder.setMtu(VPN_MTU);
         builder.addAddress(VPN_ADDRESS, 24);
         builder.addDnsServer("8.8.8.8");
+        //builder.addDnsServer("8.8.4.4");
 
         if (Utils.isLollipopOrAbove()) {
             builder.allowFamily(android.system.OsConstants.AF_INET6);
@@ -248,11 +296,11 @@ public class XsocksVpnService extends VpnService {
                 String packageName = getPackageName();
                 builder.addDisallowedApplication(packageName);
             } catch (PackageManager.NameNotFoundException e) {
-                // ignore
+                Log.e(TAG, "Package name not found");
             }
         }
 
-        if (Utils.isLollipopOrAbove() && config.route.equals(Constants.Route.ALL)) {
+/*        if (Utils.isLollipopOrAbove() && config.route.equals(Constants.Route.ALL)) {
             builder.addRoute("0.0.0.0", 0); // Interact
 
         } else {
@@ -272,9 +320,34 @@ public class XsocksVpnService extends VpnService {
                 default:
                     break;
             }
+        }*/
+
+/*        if (config.route.equals(Constants.Route.ALL)) {
+            builder.addRoute("0.0.0.0", 0);
+
+        } else {
+            route_bypass(builder);
+        }*/
+
+        switch (config.route) {
+            case Constants.Route.ALL:
+                builder.addRoute("0.0.0.0", 0);
+                break;
+
+            case Constants.Route.BYPASS_LAN:
+                route_bypass_lan(builder);
+                break;
+
+            case Constants.Route.BYPASS_CHN:
+                route_bypass_internal(builder);
+                break;
+
+            default:
+                break;
         }
 
         builder.addRoute("8.8.0.0", 16);
+
         vpnInterface = builder.establish();
         if (vpnInterface == null) {
             Log.e(TAG, "vpn interface is null");
