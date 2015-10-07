@@ -1,5 +1,6 @@
 package io.github.xsocks.service;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,28 +8,31 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.VpnService;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-
-import org.apache.commons.net.util.SubnetUtils;
-import org.apache.http.conn.util.InetAddressUtils;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Locale;
+import java.util.Scanner;
 
 import io.github.xsocks.BuildConfig;
 import io.github.xsocks.R;
 import io.github.xsocks.aidl.Config;
 import io.github.xsocks.aidl.IXsocksService;
 import io.github.xsocks.aidl.IXsocksServiceCallback;
+import io.github.xsocks.ui.MainActivity;
 import io.github.xsocks.ui.XsocksRunnerActivity;
 import io.github.xsocks.utils.ConfigUtils;
 import io.github.xsocks.utils.Constants;
@@ -39,14 +43,15 @@ import rx.util.async.Async;
 public class XsocksVpnService extends VpnService {
 
     private String TAG = "XSOCKS";
+
+    private int pdnsdPort = 1053;
+    private int forwarderPort = 5533;
     private static final String VPN_ADDRESS = "26.26.26.1";
-    int forwarderPort = 5533;
-    int pdnsdPort = 1053;
 
     private Config config = null;
     private ParcelFileDescriptor vpnInterface;
 
-    private BroadcastReceiver receiver = null;
+    private BroadcastReceiver closeReceiver = null;
     private Constants.State state = Constants.State.INIT;
     private int callbackCount = 0;
     private final RemoteCallbackList<IXsocksServiceCallback> callbacks = new RemoteCallbackList<>();
@@ -91,6 +96,31 @@ public class XsocksVpnService extends VpnService {
         }
     };
 
+    private void notifyForegroundAlert(String title, String info, Boolean visible) {
+        Intent openIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, openIntent, 0);
+        Intent closeIntent = new Intent(Constants.Action.CLOSE);
+        PendingIntent actionIntent = PendingIntent.getBroadcast(this, 0, closeIntent, 0);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+        builder.setWhen(0)
+            .setTicker(title)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(info)
+            .setContentIntent(contentIntent)
+            .setSmallIcon(R.drawable.ic_logo)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                    getString(R.string.stop), actionIntent);
+
+        if (visible) {
+            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        } else {
+            builder.setPriority(NotificationCompat.PRIORITY_MIN);
+        }
+
+        startForeground(1, builder.build());
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -126,16 +156,56 @@ public class XsocksVpnService extends VpnService {
         }
     }
 
+    private String readFromRaw(int resId) {
+        InputStream in = this.getResources().openRawResource(resId);
+        Scanner scanner = new Scanner(in,"UTF-8").useDelimiter("\\A");
+        StringBuilder sb = new StringBuilder();
+        while (scanner.hasNext()) {
+            sb.append(scanner.next());
+        }
+        scanner.close();
+        return sb.toString();
+    }
+
     private void startXsocksDaemon() {
-        String cmd = String.format("%sxsocks -s %s:%d -k %s -p %sxsocks.pid",
-                Constants.Path.BASE, config.proxy, config.remotePort, config.sitekey, Constants.Path.BASE);
+        if (!config.route.equals(Constants.Route.ALL)) {
+            InputStream in;
+            OutputStream out;
+            if (config.route.equals(Constants.Route.BYPASS_LAN)) {
+                in = this.getResources().openRawResource(R.raw.route_lan);
+            } else {
+                in = this.getResources().openRawResource(R.raw.route_chn);
+            }
+
+            try {
+                out = new FileOutputStream(Constants.Path.BASE + "acl.list");
+                Utils.copyFile(in, out);
+                in.close();
+                out.flush();
+                out.close();
+
+            } catch (IOException e) {
+                Log.e(TAG, "Copy file error: " + e.getMessage());
+            }
+        }
+
+        String cmd = String.format("%sxsocks -s %s:%d -k %s -p %sxsocks.pid -t 600",
+                Constants.Path.BASE, config.proxy, config.remotePort, config.sitekey,
+                Constants.Path.BASE);
+
+        if (!config.route.equals(Constants.Route.ALL)) {
+            cmd += " --acl ";
+            cmd += Constants.Path.BASE + "acl.list";
+        }
+
         if (BuildConfig.DEBUG) {
             Log.d(TAG, cmd);
         }
+
         io.github.xsocks.System.exec(cmd);
     }
 
-    private void startDnsTunnel() {
+    private void startDnsForwarder() {
         String cmd = String.format("%sxforwarder -l 0.0.0.0:%d -d 8.8.8.8:53 "
                         + "-s %s:%d "
                         + "-k %s "
@@ -148,97 +218,46 @@ public class XsocksVpnService extends VpnService {
         io.github.xsocks.System.exec(cmd);
     }
 
+    private String getRejectList() {
+        return readFromRaw(R.raw.dns_reject_list);
+    }
+
+    private String getBlackList() {
+        return readFromRaw(R.raw.dns_black_list);
+    }
+
     private void startDnsDaemon() {
-        String reject = ConfigUtils.getRejectList(getBaseContext());
-        String blackList = ConfigUtils.getBlackList(getBaseContext());
-        String conf = String.format(Locale.ENGLISH, getResources().getString(R.string.pdnsd_conf),
-                pdnsdPort, reject, blackList, forwarderPort);
+        String rejectList = getRejectList();
+        String blackList = getBlackList();
+
+        String content;
+        String conf;
+
+        if (config.route.equals(Constants.Route.BYPASS_CHN)) {
+            content = readFromRaw(R.raw.pdnsd_direct);
+            conf = String.format(Locale.ENGLISH, content, pdnsdPort, rejectList, blackList, forwarderPort, blackList);
+
+        } else {
+            content = readFromRaw(R.raw.pdnsd_local);
+            conf = String.format(Locale.ENGLISH, content, pdnsdPort, forwarderPort);
+        }
+
         ConfigUtils.printToFile(new File(Constants.Path.BASE + "pdnsd.conf"), conf);
+
         String cmd = Constants.Path.BASE + "pdnsd -c " + Constants.Path.BASE + "pdnsd.conf";
+
         if (BuildConfig.DEBUG) {
             Log.d(TAG, cmd);
         }
+
         io.github.xsocks.System.exec(cmd);
     }
 
-    private boolean isBypass(SubnetUtils net) {
-        SubnetUtils.SubnetInfo info = net.getInfo();
-        return info.isInRange(config.proxy);
-    }
-
-    private boolean isPrivateA(int a) {
-        return a == 10 || a == 192 || a == 172;
-    }
-
-    private boolean isPrivateB(int a, int b) {
-        return a == 10 || (a == 192 && b == 168) || (a == 172 && b >= 16 && b < 32);
-    }
-
-    private void route_all(Builder builder) {
-        for (int i = 1; i <= 223; i++){
-            if (i != 26 && i != 127) {
-                String addr = Integer.toString(i) + ".0.0.0";
-                String cidr = addr + "/8";
-                SubnetUtils net = new SubnetUtils(cidr);
-                if (!isBypass(net)) {
-                    builder.addRoute(addr, 8);
-                } else {
-                    for (int j = 0; j <= 255; j++){
-                        String subAddr = Integer.toString(i) + "." + Integer.toString(j) + ".0.0";
-                        String subCidr = subAddr + "/16";
-                        SubnetUtils subNet = new SubnetUtils(subCidr);
-                        if (!isBypass(subNet)) {
-                            builder.addRoute(subAddr, 16);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void route_bypass_lan(Builder builder) {
-        for (int i = 1; i <= 223; i++) {
-            if (i != 26 && i != 127) {
-                String addr = Integer.toString(i) + ".0.0.0";
-                String cidr = addr + "/8";
-                SubnetUtils net = new SubnetUtils(cidr);
-
-                if (!isBypass(net) && !isPrivateA(i)) {
-                    builder.addRoute(addr, 8);
-                } else {
-                    for (int j = 0; j <= 255; j++){
-                        String subAddr = Integer.toString(i) + "." + Integer.toString(j) + ".0.0";
-                        String subCidr = subAddr + "/16";
-                        SubnetUtils subNet = new SubnetUtils(subCidr);
-                        if (!isBypass(subNet) && !isPrivateB(i, j)) {
-                            builder.addRoute(subAddr, 16);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void route_bypass_chn(Builder builder) {
-        String[] routes;
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            routes = getResources().getStringArray(R.array.simple_route);
-        } else {
-            routes = getResources().getStringArray(R.array.gfw_route);
-        }
-        for (String cidr : routes) {
-            SubnetUtils net = new SubnetUtils(cidr);
-            if (!isBypass(net)) {
-                String[] addr = cidr.split("/");
-                builder.addRoute(addr[0], Integer.parseInt(addr[1]));
-            }
-        }
-    }
-
-    private void route_bypass_internal(Builder builder) {
+    private void route_bypass(Builder builder) {
         String line;
         final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(this.getResources().openRawResource(R.raw.internal)));
+                new InputStreamReader(this.getResources().openRawResource(R.raw.route_bypass)));
+
         try {
             while ((line = reader.readLine()) != null) {
                 final String[] route = line.split("/");
@@ -257,38 +276,13 @@ public class XsocksVpnService extends VpnService {
         }
     }
 
-    private void route_bypass(Builder builder) {
-        String line;
-        final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(this.getResources().openRawResource(R.raw.bypass)));
-
-        try {
-            while ((line = reader.readLine()) != null) {
-                final String[] route = line.split("/");
-                if (route.length == 2) {
-                    builder.addRoute(route[0], Integer.parseInt(route[1]));
-                }
-            }
-        } catch (final Throwable t) {
-            Log.e(TAG, "", t);
-        } finally {
-            try {
-                reader.close();
-            } catch (final IOException pIOException) {
-                // ignore
-            }
-        }
-    }
-
     private void startVpn(){
-        //android.os.Debug.waitForDebugger();
         int VPN_MTU = 1500;
         Builder builder = new Builder();
         builder.setSession(config.profileName);
         builder.setMtu(VPN_MTU);
         builder.addAddress(VPN_ADDRESS, 24);
-        builder.addDnsServer("8.8.8.8");
-        //builder.addDnsServer("8.8.4.4");
+        builder.addDnsServer("8.8.4.4");
 
         if (Utils.isLollipopOrAbove()) {
             builder.allowFamily(android.system.OsConstants.AF_INET6);
@@ -300,50 +294,11 @@ public class XsocksVpnService extends VpnService {
             }
         }
 
-/*        if (Utils.isLollipopOrAbove() && config.route.equals(Constants.Route.ALL)) {
-            builder.addRoute("0.0.0.0", 0); // Interact
-
-        } else {
-            switch (config.route) {
-                case Constants.Route.ALL:
-                    route_all(builder);
-                    break;
-
-                case Constants.Route.BYPASS_LAN:
-                    route_bypass_lan(builder);
-                    break;
-
-                case Constants.Route.BYPASS_CHN:
-                    route_bypass_chn(builder);
-                    break;
-
-                default:
-                    break;
-            }
-        }*/
-
-/*        if (config.route.equals(Constants.Route.ALL)) {
+        if (config.route.equals(Constants.Route.ALL)) {
             builder.addRoute("0.0.0.0", 0);
 
         } else {
             route_bypass(builder);
-        }*/
-
-        switch (config.route) {
-            case Constants.Route.ALL:
-                builder.addRoute("0.0.0.0", 0);
-                break;
-
-            case Constants.Route.BYPASS_LAN:
-                route_bypass_lan(builder);
-                break;
-
-            case Constants.Route.BYPASS_CHN:
-                route_bypass_internal(builder);
-                break;
-
-            default:
-                break;
         }
 
         builder.addRoute("8.8.0.0", 16);
@@ -354,14 +309,16 @@ public class XsocksVpnService extends VpnService {
         }
 
         int fd = vpnInterface.getFd();
+
         String cmd = String.format("%stun2socks --netif-ipaddr %s "
                         + "--netif-netmask 255.255.255.0 "
                         + "--socks-server-addr 127.0.0.1:%d "
                         + "--tunfd %d "
                         + "--tunmtu %d "
-                        + "--loglevel 4 "
+                        + "--loglevel 3 "
                         + "--pid %stun2socks.pid",
-                Constants.Path.BASE, "26.26.26.2", config.localPort, fd, VPN_MTU, Constants.Path.BASE);
+                Constants.Path.BASE, "26.26.26.2", config.localPort, fd, VPN_MTU,
+                Constants.Path.BASE);
 
         if (config.isUdpDns) {
             cmd += " --enable-udprelay";
@@ -384,7 +341,7 @@ public class XsocksVpnService extends VpnService {
         startXsocksDaemon();
         if (!config.isUdpDns) {
             startDnsDaemon();
-            startDnsTunnel();
+            startDnsForwarder();
         }
         startVpn();
         return true;
@@ -392,6 +349,20 @@ public class XsocksVpnService extends VpnService {
 
     private void startRunner(Config c) {
         config = c;
+
+        // register close closeReceiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SHUTDOWN);
+        filter.addAction(Constants.Action.CLOSE);
+        closeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(context, R.string.stopping, Toast.LENGTH_SHORT).show();
+                stopRunner();
+            }
+        };
+        registerReceiver(closeReceiver, filter);
+
         // ensure the VPNService is prepared
         if (VpnService.prepare(this) != null) {
             Intent i = new Intent(this, XsocksRunnerActivity.class);
@@ -400,17 +371,6 @@ public class XsocksVpnService extends VpnService {
             return;
         }
 
-        // register close receiver
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SHUTDOWN);
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                stopRunner();
-            }
-        };
-        registerReceiver(receiver, filter);
-
         changeState(Constants.State.CONNECTING);
 
         Async.runAsync(Schedulers.newThread(), (observer, subscription) -> {
@@ -418,19 +378,22 @@ public class XsocksVpnService extends VpnService {
                 killProcesses();
 
                 boolean resolved = false;
-                if (!InetAddressUtils.isIPv4Address(config.proxy) &&
-                        !InetAddressUtils.isIPv6Address(config.proxy)) {
+                if (!Utils.isIPv4Address(config.proxy) && !Utils.isIPv6Address(config.proxy)) {
                     String addr = Utils.resolve(config.proxy, true);
                     if (addr != null) {
                         config.proxy = addr;
                         resolved = true;
                     }
+
                 } else {
                     resolved = true;
                 }
-
                 if (resolved && startDaemons()) {
+                    notifyForegroundAlert(getString(R.string.forward_success),
+                            getString(R.string.service_running, config.profileName),
+                            false);
                     changeState(Constants.State.CONNECTED);
+
                 } else {
                     changeState(Constants.State.STOPPED, getString(R.string.service_failed));
                     stopRunner();
@@ -440,6 +403,8 @@ public class XsocksVpnService extends VpnService {
     }
 
     private void stopRunner() {
+        stopForeground(true);
+
         changeState(Constants.State.STOPPING);
 
         killProcesses();
@@ -457,10 +422,10 @@ public class XsocksVpnService extends VpnService {
             stopSelf();
         }
 
-        // clean up the context
-        if (receiver != null) {
-            unregisterReceiver(receiver);
-            receiver = null;
+        // clean up receiver
+        if (closeReceiver != null) {
+            unregisterReceiver(closeReceiver);
+            closeReceiver = null;
         }
 
         changeState(Constants.State.STOPPED);

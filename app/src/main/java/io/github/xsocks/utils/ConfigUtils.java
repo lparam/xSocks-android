@@ -1,10 +1,8 @@
 package io.github.xsocks.utils;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import io.github.xsocks.R;
 import io.github.xsocks.aidl.Config;
 
 public class ConfigUtils {
@@ -19,14 +17,6 @@ public class ConfigUtils {
             Log.e("XSOCKS", ex.getMessage());
             return false;
         }
-    }
-
-    public static String getRejectList(Context context) {
-        return context.getString(R.string.reject);
-    }
-
-    public static String getBlackList(Context context) {
-        return context.getString(R.string.black_list);
     }
 
     public static Config load(SharedPreferences settings) {

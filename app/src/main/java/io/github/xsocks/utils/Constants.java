@@ -27,6 +27,7 @@ public class Constants {
 
     public class Action {
         public static final String SERVICE = "io.github.xsocks.SERVICE";
+        public static final String CLOSE = "io.github.xsocks.CLOSE";
         public static final String UPDATE_PREFS = "io.github.xsocks.ACTION_UPDATE_PREFS";
     }
 

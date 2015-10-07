@@ -74,5 +74,6 @@
     <string name="about">About</string>
     <string name="about_title">Xsocks %s</string>
     <string name="add_profile">Add Profile</string>
+    <string name="version_default">Version 1.0.0 (100)</string>
 
 </resources>

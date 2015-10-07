@@ -73,7 +73,6 @@ dependencies {
     compile('com.mikepenz.materialdrawer:library:2.9.7@aar') {
         transitive = true
     }
-    compile 'commons-net:commons-net:3.3'
     compile 'dnsjava:dnsjava:2.1.7'
     compile 'com.google.code.gson:gson:2.3.1'
 }
