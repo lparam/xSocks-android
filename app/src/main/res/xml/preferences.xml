@@ -49,6 +49,20 @@
                 android:title="@string/route_list">
         </io.github.xsocks.preferences.SummaryListPreference>
         <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="isGlobalProxy"
+            android:disableDependentsState="true"
+            android:summary="@string/auto_set_proxy_summary"
+            android:title="@string/auto_set_proxy">
+        </CheckBoxPreference>
+        <Preference
+            android:key="proxyedApps"
+            android:dependency="isGlobalProxy"
+            android:summary="@string/proxied_apps_summary"
+            android:title="@string/proxied_apps">
+            <intent android:action="io.github.xsocks.ui.AppManagerActivity"/>
+        </Preference>
+        <CheckBoxPreference
                 android:key="isUdpDns"
                 android:defaultValue="false"
                 android:summary="@string/udp_dns_summary"

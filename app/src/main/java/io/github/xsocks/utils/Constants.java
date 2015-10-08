@@ -53,5 +53,10 @@ public class Constants {
         public static final String remotePort = "remotePort";
         public static final String localPort = "port";
     }
+
+    public class Scheme {
+        public static final String APP = "app://";
+    }
+
 }
 

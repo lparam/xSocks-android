@@ -285,7 +285,6 @@ public class XsocksVpnService extends VpnService {
         builder.addDnsServer("8.8.4.4");
 
         if (Utils.isLollipopOrAbove()) {
-            builder.allowFamily(android.system.OsConstants.AF_INET6);
             try {
                 String packageName = getPackageName();
                 builder.addDisallowedApplication(packageName);

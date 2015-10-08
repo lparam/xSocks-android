@@ -75,4 +75,5 @@ dependencies {
     }
     compile 'dnsjava:dnsjava:2.1.7'
     compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.8.4'
 }

@@ -37,7 +37,7 @@
   <string name="forward_stop">后台服务已停止。</string>
   <string name="service_failed">无法连接远程服务器</string>
   <string name="stop">停止服务</string>
-  <string name="stopping">正在关闭...</string>
+  <string name="stopping">正在关闭…</string>
   <string name="vpn_error">后台服务启动失败：%s</string>
 
   <string name="port_alert">本地端口号应大于1024</string>
@@ -45,10 +45,10 @@
   <string name="proxy_empty">服务器地址不能为空</string>
   <string name="password_empty">服务器密码不能为空</string>
   <string name="crash_alert">检测到意外退出，状态已被重置。</string>
-  <string name="connecting">正在连接...</string>
-  <string name="initializing">正在初始化...</string>
-  <string name="recovering">重置中...</string>
-  <string name="loading">正在加载...</string>
+  <string name="connecting">正在连接…</string>
+  <string name="initializing">正在初始化…</string>
+  <string name="recovering">重置中…</string>
+  <string name="loading">正在加载…</string>
   <string name="yes">是</string>
   <string name="no">否</string>
   <string name="profiles">配置文件</string>

@@ -12,6 +12,7 @@ import io.github.xsocks.preferences.PasswordEditTextPreference;
 import io.github.xsocks.preferences.ProfileEditTextPreference;
 import io.github.xsocks.preferences.SummaryEditTextPreference;
 import io.github.xsocks.utils.Constants;
+import io.github.xsocks.utils.Utils;
 
 public class PrefsFragment extends PreferenceFragment {
     public static String[] PROXY_PREFS = {
@@ -24,6 +25,8 @@ public class PrefsFragment extends PreferenceFragment {
 
     public static String[] FEATURE_PREFS = {
             Constants.Key.route,
+            Constants.Key.isGlobalProxy,
+            Constants.Key.proxyedApps,
             Constants.Key.isUdpDns,
             Constants.Key.isAutoConnect
     };
@@ -45,7 +48,12 @@ public class PrefsFragment extends PreferenceFragment {
         for (String name : FEATURE_PREFS) {
             Preference pref = findPreference(name);
             if (pref != null) {
-                pref.setEnabled(enabled);
+                if (name.equals(Constants.Key.isGlobalProxy) || name.equals(Constants.Key.proxyedApps)) {
+                    pref.setEnabled(enabled && (Utils.isLollipopOrAbove()));
+
+                } else {
+                    pref.setEnabled(enabled);
+                }
             }
         }
     }

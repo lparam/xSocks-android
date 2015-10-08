@@ -1,6 +1,14 @@
 package io.github.xsocks.utils;
 
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.xbill.DNS.AAAARecord;
@@ -161,6 +169,51 @@ public class Utils {
 
     public static boolean isIPv6Address(final String input) {
         return isIPv6StdAddress(input) || isIPv6HexCompressedAddress(input);
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable)drawable).getBitmap();
+        }
+
+        int width = drawable.getIntrinsicWidth() > 0 ? drawable.getIntrinsicWidth() : 1;
+        int height = drawable.getIntrinsicWidth() > 0 ? drawable.getIntrinsicWidth() : 1;
+
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+    public static Drawable getAppIcon(Context c, String packageName) {
+        PackageManager pm = c.getPackageManager();
+        Drawable icon = ContextCompat.getDrawable(c, android.R.drawable.sym_def_app_icon);
+        try {
+            return pm.getApplicationIcon(packageName);
+        } catch (PackageManager.NameNotFoundException e) {
+            return icon;
+        }
+    }
+
+    public static Drawable getAppIcon(Context c, int uid) {
+        PackageManager pm = c.getPackageManager();
+        Drawable icon = ContextCompat.getDrawable(c, android.R.drawable.sym_def_app_icon);
+        String[] packages = pm.getPackagesForUid(uid);
+        if (packages != null) {
+            if (packages.length >= 1) {
+                try {
+                    ApplicationInfo appInfo = pm.getApplicationInfo(packages[0], 0);
+                    return pm.getApplicationIcon(appInfo);
+                } catch (PackageManager.NameNotFoundException e) {
+                    Log.e(c.getPackageName(), "No package found matching with the uid " + uid);
+                }
+            }
+        } else {
+            Log.e(c.getPackageName(), "Package not found for uid " + uid);
+        }
+        return icon;
     }
 
 }
