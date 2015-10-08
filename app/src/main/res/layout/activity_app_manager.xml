@@ -35,7 +35,8 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="10dp"
                 android:text="@string/bypass_apps"
-                android:enabled="false"
+                android:textColor="@color/tool_switch"
+                android:enabled="true"
                 android:switchMinWidth="60dp"
                 android:switchTextAppearance="@android:style/TextAppearance.Small.Inverse" />
         </RelativeLayout>

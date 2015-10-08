@@ -28,4 +28,8 @@ public class ProxiedApp {
     public boolean getProxied() {
         return proxied;
     }
+
+    public void setProxied(boolean proxied) {
+        this.proxied = proxied;
+    }
 }

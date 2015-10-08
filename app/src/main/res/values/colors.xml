@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="tool_title">#FFFFFF</color>
+    <color name="tool_switch">#ffe2e2e2</color>
 
     <color name="about_description">#727272</color>
     <color name="about_dividerDark">#AAA</color>
