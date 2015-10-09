@@ -29,7 +29,7 @@ android {
                 logger.error('signing error: ' + ex)
             }
             zipAlignEnabled true
-            minifyEnabled false
+            minifyEnabled true
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
