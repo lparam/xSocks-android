@@ -23,10 +23,12 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -37,8 +39,6 @@ import com.mikepenz.materialdrawer.adapter.DrawerAdapter;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
-import com.nispok.snackbar.Snackbar;
-import com.nispok.snackbar.SnackbarManager;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     private Switch switchButton;
     private ProgressDialog progressDialog = null;
     private PrefsFragment prefsFragment;
-    private Drawer.Result result;
+    private Drawer.Result drawer;
     private DrawerAdapter adapter;
 
     private Profile currentProfile;
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         ArrayList<IDrawerItem> items = getDrawerItems();
         adapter = new DrawerAdapter(this, items);
 
-        result = new Drawer()
+        drawer = new Drawer()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withAdapter(adapter)
@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 })
                 .build();
 
-        result.getListView().setVerticalScrollBarEnabled(false);
+        drawer.getListView().setVerticalScrollBarEnabled(false);
 
         prefsFragment = new PrefsFragment();
         getFragmentManager().beginTransaction().replace(R.id.content, prefsFragment).commit();
@@ -334,11 +334,15 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         clearDialog();
                         changeSwitch(false);
                         if (m != null) {
-                            SnackbarManager.show(
-                                    Snackbar.with(MainActivity.this)
-                                            .text(String.format(getString(R.string.vpn_error), m))
-                                            .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                                            .swipeToDismiss(false));
+                            Snackbar.make(drawer.getDrawerLayout(),
+                                        String.format(getString(R.string.vpn_error), m),
+                                        Snackbar.LENGTH_LONG)
+                                    .setAction("Undo", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                        }
+                                    })
+                                    .show();
                         }
                         prefsFragment.setPreferenceEnabled(true);
                         break;
@@ -424,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private void updateAdapter() {
         ArrayList<IDrawerItem> items = getDrawerItems();
-        result.setItems(items);
+        drawer.setItems(items);
     }
 
     private void addProfile() {
@@ -470,12 +474,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         try {
             startActivity(intent);
         } catch (ActivityNotFoundException ex) {
-            SnackbarManager.show(
-                    Snackbar.with(this)
-                            .text("There are no email applications installed.")
-                            .textColor(Color.RED)
-                            .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                            .swipeToDismiss(false));
+            Snackbar.make(drawer.getDrawerLayout(),
+                    "There are no email applications installed.",
+                    Snackbar.LENGTH_LONG)
+                    .setActionTextColor(Color.RED)
+                    .show();
         }
     }
 
@@ -635,11 +638,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     private boolean isTextEmpty(String s, String msg) {
         if (s == null || s.length() <= 0) {
-            SnackbarManager.show(
-                    Snackbar.with(this)
-                            .text(msg)
-                            .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                            .swipeToDismiss(false));
+            Snackbar.make(drawer.getDrawerLayout(), msg, Snackbar.LENGTH_LONG).show();
             return true;
         }
         return false;
@@ -661,19 +660,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         try {
             int port = Integer.valueOf(text);
             if (!low && port <= 1024) {
-                SnackbarManager.show(
-                        Snackbar.with(this)
-                                .text(getString(R.string.port_alert))
-                                .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                                .swipeToDismiss(false));
+                Snackbar.make(drawer.getDrawerLayout(), getString(R.string.port_alert), Snackbar.LENGTH_LONG).show();
                 return false;
             }
         } catch (Exception ex) {
-            SnackbarManager.show(
-                    Snackbar.with(this)
-                            .text(getString(R.string.port_alert))
-                            .duration(Snackbar.SnackbarDuration.LENGTH_LONG)
-                            .swipeToDismiss(false));
+            Snackbar.make(drawer.getDrawerLayout(), getString(R.string.port_alert), Snackbar.LENGTH_LONG).show();
             return false;
         }
         return true;

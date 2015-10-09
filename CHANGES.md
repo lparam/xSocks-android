@@ -1,3 +1,10 @@
+v1.3.0 (2015-10-9)
+-----------
+* Feature: Support ACL
+* Feature: Add App Manager
+* Change: Adjust Route policy
+
+
 v1.2.2 (2015-9-16)
 -----------
 * Hotfix: crypto initialization

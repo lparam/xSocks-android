@@ -19,7 +19,7 @@ public class Profile {
     private String route = "all";
     @SerializedName("global")
     private boolean global = true;
-    @SerializedName("bypass")
+    @SerializedName("route_bypass")
     private boolean bypass = false;
     @SerializedName("udpdns")
     private boolean udpdns = false;

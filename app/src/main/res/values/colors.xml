@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="tool_title">@android:color/white</color>
+    <color name="tool_title">#FFFFFF</color>
+    <color name="tool_switch">#FFFFFF</color>
 
     <color name="about_description">#727272</color>
     <color name="about_dividerDark">#AAA</color>
