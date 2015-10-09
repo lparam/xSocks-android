@@ -7,22 +7,16 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -37,73 +31,36 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import io.github.xsocks.R;
 import io.github.xsocks.model.ProxiedApp;
 import io.github.xsocks.utils.Constants;
 import io.github.xsocks.utils.Utils;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.util.async.Async;
 
 
-public class AppManagerActivity extends AppCompatActivity
+public class AppManagerActivity extends RxAppCompatActivity
         implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
-    private Handler handler = null;
-    private TextView overlay = null;
     private boolean appsLoaded;
     private ListAdapter adapter;
     private ListView appListView;
     private ProgressDialog progressDialog;
     private int STUB = android.R.drawable.sym_def_app_icon;
     private ProxiedApp[] apps;
-
-    private Runnable loadStartRunnable = new Runnable() {
-        @Override
-        public void run() {
-            progressDialog = ProgressDialog
-                    .show(AppManagerActivity.this, "", getString(R.string.loading), true, true);
-        }
-    };
-
-    private Runnable loadFinishRunnable = new Runnable() {
-        @Override
-        public void run() {
-            appListView.setAdapter(adapter);
-            appListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                    if (visible) {
-                        String name = apps[firstVisibleItem].getName();
-                        if (name != null && name.length() > 1) {
-                            overlay.setText(apps[firstVisibleItem].getName().substring(0, 1));
-                        } else {
-                            overlay.setText("*");
-                        }
-                        overlay.setVisibility(View.VISIBLE);
-                    }
-                }
-
-                public void onScrollStateChanged(AbsListView view, int scrollState) {
-                    visible = true;
-                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-                        overlay.setVisibility(View.INVISIBLE);
-                    }
-                }
-
-                boolean visible = false;
-            });
-
-            if (progressDialog != null) {
-                progressDialog.dismiss();
-                progressDialog = null;
-            }
-        }
-    };
 
     private class AppIconDownloader extends BaseImageDownloader {
 
@@ -177,14 +134,6 @@ public class AppManagerActivity extends AppCompatActivity
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
-        handler = new Handler();
-        this.overlay = (TextView) View.inflate(this, R.layout.overlay, null);
-        getWindowManager().addView(overlay, new
-                WindowManager.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, PixelFormat.TRANSLUCENT));
-
         ImageLoaderConfiguration config =
                 new ImageLoaderConfiguration.Builder(this)
                         .imageDownloader(new AppIconDownloader(this))
@@ -200,18 +149,17 @@ public class AppManagerActivity extends AppCompatActivity
         bypassSwitch.setChecked(prefs.getBoolean(Constants.Key.isBypassApps, false));
 
         appListView = (ListView) findViewById(R.id.applistview);
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        handler.post(loadStartRunnable);
-        if (!appsLoaded) loadApps();
-        handler.post(loadFinishRunnable);
+        if (!appsLoaded) {
+            loadApps();
+        }
     }
 
-    private ProxiedApp[] loadApps(Context context) {
+    private ProxiedApp[] getApps(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String proxiedAppString = prefs.getString(Constants.Key.proxied, "");
         String[] appString = proxiedAppString.split("\\|");
@@ -238,78 +186,95 @@ public class AppManagerActivity extends AppCompatActivity
         }
         ProxiedApp[] appArray = new ProxiedApp[appList.size()];
         appList.toArray(appArray);
-        return appArray;
-    }
 
-    private void loadApps() {
-        apps = loadApps(this);
-        Arrays.sort(apps, (a, b) -> {
-/*            if (a == null || b == null || a.getName() == null || b.getName() == null) {
-                return 1;
-            } else if (a.getProxied() == b.getProxied()) {
-                return a.getName().compareTo(b.getName());
-            } else if (a.getProxied()) {
-                return 1;
-            } else {
-                return 0;
-            }*/
+        Collator c = Collator.getInstance(Locale.CHINESE);
+        Arrays.sort(appArray, (a, b) -> {
+            CollationKey k1 = c.getCollationKey(a.getName());
+            CollationKey k2 = c.getCollationKey(b.getName());
+
             if (a.getProxied()) {
                 if (b.getProxied()) {
-                    return a.getName().compareTo(b.getName());
+                    return k1.compareTo(k2);
                 }
                 return -1;
 
             } else if (a.getProxied() == b.getProxied()) {
-                return a.getName().compareTo(b.getName());
+                return k1.compareTo(k2);
 
             } else {
                 return 1;
             }
         });
 
-        adapter = new ArrayAdapter<ProxiedApp>(this, R.layout.apps_item, R.id.itemtext, apps) {
-          @Override
-          public View getView(int position, View view, ViewGroup parent) {
-              View convertView = view;
-              ListEntry entry;
-              if (convertView == null) {
-                  convertView = getLayoutInflater().inflate(R.layout.apps_item, parent, false);
-                  TextView text = (TextView) convertView.findViewById(R.id.itemtext);
-                  CheckBox box = (CheckBox) convertView.findViewById(R.id.itemcheck);
-                  ImageView icon = (ImageView) convertView.findViewById(R.id.itemicon);
-                  entry = new ListEntry(box, text, icon);
-                  entry.getText().setOnClickListener(AppManagerActivity.this);
-                  entry.getBox().setOnCheckedChangeListener(AppManagerActivity.this);
-                  convertView.setTag(entry);
+        return appArray;
+    }
 
-              } else {
-                  entry = (ListEntry) convertView.getTag();
-              }
+    private void loadApps() {
+        progressDialog = ProgressDialog
+                .show(AppManagerActivity.this, "", getString(R.string.loading), true, true);
 
-              ProxiedApp app = apps[position];
-              DisplayImageOptions options =
-                      new DisplayImageOptions.Builder()
-                              .showStubImage(STUB)
-                              .showImageForEmptyUri(STUB)
-                              .showImageOnFail(STUB)
-                              .resetViewBeforeLoading()
-                              .cacheInMemory()
-                              .cacheOnDisc()
-                              .displayer(new FadeInBitmapDisplayer(300))
-                              .build();
-              ImageLoader.getInstance().displayImage(Constants.Scheme.APP + app.getPackageName(), entry.icon, options);
+        Async.toAsync(this::getApps).call(this)
+                .observeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(bindToLifecycle())
+                .subscribe(apps -> {
+                    this.apps = apps;
+                    adapter = new ArrayAdapter<ProxiedApp>(this, R.layout.apps_item, R.id.itemtext, apps) {
+                        @Override
+                        public View getView(int position, View view, ViewGroup parent) {
+                            View convertView = view;
+                            ListEntry entry;
+                            if (convertView == null) {
+                                convertView = getLayoutInflater().inflate(R.layout.apps_item, parent, false);
+                                TextView text = (TextView) convertView.findViewById(R.id.itemtext);
+                                CheckBox box = (CheckBox) convertView.findViewById(R.id.itemcheck);
+                                ImageView icon = (ImageView) convertView.findViewById(R.id.itemicon);
+                                entry = new ListEntry(box, text, icon);
+                                entry.getText().setOnClickListener(AppManagerActivity.this);
+                                entry.getBox().setOnCheckedChangeListener(AppManagerActivity.this);
+                                convertView.setTag(entry);
 
-              entry.text.setText(app.getName());
-              CheckBox box = entry.getBox();
-              box.setTag(app);
-              box.setChecked(app.getProxied());
-              entry.text.setTag(box);
+                            } else {
+                                entry = (ListEntry) convertView.getTag();
+                            }
 
-              return convertView;
-          }
-        };
+                            ProxiedApp app = apps[position];
+                            DisplayImageOptions options =
+                                    new DisplayImageOptions.Builder()
+                                            .showStubImage(STUB)
+                                            .showImageForEmptyUri(STUB)
+                                            .showImageOnFail(STUB)
+                                            .resetViewBeforeLoading()
+                                            .cacheInMemory()
+                                            .cacheOnDisc()
+                                            .displayer(new FadeInBitmapDisplayer(300))
+                                            .build();
+                            ImageLoader.getInstance().displayImage(Constants.Scheme.APP + app.getPackageName(), entry.icon, options);
 
-        appsLoaded = true;
+                            entry.text.setText(app.getName());
+                            CheckBox box = entry.getBox();
+                            box.setTag(app);
+                            box.setChecked(app.getProxied());
+                            entry.text.setTag(box);
+
+                            return convertView;
+                        }
+                    };
+
+                    appListView.setAdapter(adapter);
+                    appsLoaded = true;
+
+                    clearDialog();
+                }, ex -> {
+                    clearDialog();
+                });
+    }
+
+    private void clearDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
     }
 
     @Override
@@ -334,7 +299,7 @@ public class AppManagerActivity extends AppCompatActivity
 
     private void saveAppSettings(Context context) {
         if (apps == null) return;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         StringBuilder proxiedApps = new StringBuilder();
         for (ProxiedApp app : apps) {
             if (app.getProxied()) {
@@ -363,7 +328,7 @@ public class AppManagerActivity extends AppCompatActivity
                 int index = Arrays.binarySearch(proxiedApps, Integer.toString(uid));
                 boolean proxied = index >= 0;
                 if (proxied) {
-                    ProxiedApp app = new ProxiedApp(uid, name, packageName, proxied);
+                    ProxiedApp app = new ProxiedApp(uid, name, packageName, true);
                     appList.add(app);
                 }
             }

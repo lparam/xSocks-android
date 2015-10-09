@@ -29,7 +29,7 @@
   <string name="bypass_apps_summary">启用该选项，以使所选应用程序的流量不经过代理</string>
   <string name="auto_connect">自动连接</string>
   <string name="auto_connect_summary">随系统启动后台服务</string>
-  <string name="forward_success">后台服务已开始运行。</string>
+  <string name="forward_success">后台服务已开始运行</string>
   <string name="service_running">已连接到「%s」</string>
   <string name="service_status" formatted="false">当前速率：%d KB/s</string>
   <string name="forward_fail">后台服务启动失败。</string>
