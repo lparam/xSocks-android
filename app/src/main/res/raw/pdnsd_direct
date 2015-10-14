@@ -21,7 +21,6 @@ server {
     uptest = none;
     preset = on;
     timeout = 4;
-    reject = %s;
     reject_policy = fail;
     reject_recursively = on;
     policy = included;

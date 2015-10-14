@@ -236,7 +236,7 @@ public class XsocksVpnService extends VpnService {
 
         if (config.route.equals(Constants.Route.BYPASS_CHN)) {
             content = readFromRaw(R.raw.pdnsd_direct);
-            conf = String.format(Locale.ENGLISH, content, pdnsdPort, rejectList, blackList, forwarderPort, blackList);
+            conf = String.format(Locale.ENGLISH, content, pdnsdPort, blackList, forwarderPort, blackList);
 
         } else {
             content = readFromRaw(R.raw.pdnsd_local);
