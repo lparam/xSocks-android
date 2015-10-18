@@ -335,13 +335,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         changeSwitch(false);
                         if (m != null) {
                             Snackbar.make(drawer.getDrawerLayout(),
-                                        String.format(getString(R.string.vpn_error), m),
-                                        Snackbar.LENGTH_LONG)
-                                    .setAction("Undo", new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                        }
-                                    })
+                                    String.format(getString(R.string.vpn_error), m),
+                                    Snackbar.LENGTH_LONG)
                                     .show();
                         }
                         prefsFragment.setPreferenceEnabled(true);
@@ -463,12 +458,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         }, 600);
     }
 
-    private void recovery() {
-        progressDialog = ProgressDialog.show(this, "", getString(R.string.initializing), true, false);
-        serviceStop();
-        Async.toAsync(this::reset).call().observeOn(AndroidSchedulers.mainThread()).subscribe(o -> clearDialog());
-    }
-
     private void showAbout() {
         Intent intent = new Intent(this, AboutActivity.class);
         try {
@@ -539,6 +528,12 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         changeSwitch(false);
     }
 
+    private void recovery() {
+        progressDialog = ProgressDialog.show(this, "", getString(R.string.initializing), true, false);
+        serviceStop();
+        Async.toAsync(this::reset).call().observeOn(AndroidSchedulers.mainThread()).subscribe(o -> clearDialog());
+    }
+
     private void crashRecovery() {
         ArrayList<String> cmdList = new ArrayList<>();
 
@@ -572,9 +567,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         Console.runCommand(cmds);
     }
 
-    private void reset() {
-        crashRecovery();
-
+    private void install() {
         copyAssets(io.github.xsocks.System.getABI());
 
         ArrayList<String> sb = new ArrayList<>();
@@ -584,6 +577,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         String[] commands = new String[sb.size()];
         sb.toArray(commands);
         Console.runCommand(commands);
+    }
+
+    private void reset() {
+        crashRecovery();
+        install();
     }
 
     private void copyAssets(String path) {

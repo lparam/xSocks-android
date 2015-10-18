@@ -5,7 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 #include <cpu-features.h>
+
+#include <sys/un.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <ancillary.h>
 
 #define LOGI(...) do { __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__); } while(0)
 #define LOGW(...) do { __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__); } while(0)
@@ -21,11 +28,7 @@ jstring Java_io_github_xsocks_system_getabi(JNIEnv *env, jobject thiz) {
     } else if (family == ANDROID_CPU_FAMILY_MIPS) {
         abi = "mips";
     } else if (family == ANDROID_CPU_FAMILY_ARM) {
-        // if (features & ANDROID_CPU_ARM_FEATURE_ARMv7) {
         abi = "armeabi-v7a";
-        // } else {
-        //   abi = "armeabi";
-        // }
     }
     return env->NewStringUTF(abi);
 }
@@ -36,9 +39,46 @@ void Java_io_github_xsocks_system_exec(JNIEnv *env, jobject thiz, jstring cmd) {
     env->ReleaseStringUTFChars(cmd, str);
 }
 
+void Java_io_github_xsocks_system_jniclose(JNIEnv *env, jobject thiz, jint fd) {
+    close(fd);
+}
+
+jint Java_io_github_xsocks_system_sendfd(JNIEnv *env, jobject thiz, jint tun_fd) {
+    int fd;
+    struct sockaddr_un addr;
+
+    if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        LOGE("socket() failed: %s (socket fd = %d)\n", strerror(errno), fd);
+        return (jint)-1;
+    }
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, "/data/data/io.github.xsocks/sock_path", sizeof(addr.sun_path)-1);
+
+    if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+        LOGE("connect() failed: %s (fd = %d)\n", strerror(errno), fd);
+        close(fd);
+        return (jint)-1;
+    }
+
+    if (ancil_send_fd(fd, tun_fd)) {
+        LOGE("ancil_send_fd: %s", strerror(errno));
+        close(fd);
+        return (jint)-1;
+    }
+
+    close(fd);
+    return 0;
+}
+
 static const char *classPathName = "io/github/xsocks/System";
 
 static JNINativeMethod method_table[] = {
+    { "jniclose", "(I)V",
+        (void*) Java_io_github_xsocks_system_jniclose },
+    { "sendfd", "(I)I",
+        (void*) Java_io_github_xsocks_system_sendfd },
     { "exec", "(Ljava/lang/String;)V",
         (void*) Java_io_github_xsocks_system_exec },
     { "getABI", "()Ljava/lang/String;",

@@ -2,6 +2,21 @@ LOCAL_PATH := $(call my-dir)
 ROOT_PATH := $(LOCAL_PATH)
 
 ########################################################
+## libancillary
+########################################################
+
+include $(CLEAR_VARS)
+
+ANCILLARY_SOURCE := fd_recv.c fd_send.c
+
+LOCAL_MODULE := libancillary
+LOCAL_CFLAGS += -O2 -I$(LOCAL_PATH)/libancillary
+
+LOCAL_SRC_FILES := $(addprefix libancillary/, $(ANCILLARY_SOURCE))
+
+include $(BUILD_STATIC_LIBRARY)
+
+########################################################
 ## tun2socks
 ########################################################
 
@@ -14,7 +29,10 @@ LOCAL_CFLAGS += -DBADVPN_LITTLE_ENDIAN -DBADVPN_THREAD_SAFE
 LOCAL_CFLAGS += -DNDEBUG -DANDROID
 # LOCAL_CFLAGS += -DTUN2SOCKS_JNI
 
+LOCAL_STATIC_LIBRARIES := libancillary
+
 LOCAL_C_INCLUDES:= \
+		$(LOCAL_PATH)/libancillary \
         $(LOCAL_PATH)/badvpn/lwip/src/include/ipv4 \
         $(LOCAL_PATH)/badvpn/lwip/src/include/ipv6 \
         $(LOCAL_PATH)/badvpn/lwip/src/include \
@@ -112,11 +130,13 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE:= system
 
+LOCAL_C_INCLUDES:= $(LOCAL_PATH)/libancillary
+
 LOCAL_SRC_FILES:= system.cpp
 
 LOCAL_LDLIBS := -ldl -llog
 
-LOCAL_STATIC_LIBRARIES := cpufeatures
+LOCAL_STATIC_LIBRARIES := cpufeatures libancillary
 
 include $(BUILD_SHARED_LIBRARY)
 

@@ -30,8 +30,6 @@ import java.util.Scanner;
 import io.github.xsocks.BuildConfig;
 import io.github.xsocks.R;
 import io.github.xsocks.aidl.Config;
-import io.github.xsocks.aidl.IXsocksService;
-import io.github.xsocks.aidl.IXsocksServiceCallback;
 import io.github.xsocks.model.ProxiedApp;
 import io.github.xsocks.ui.AppManagerActivity;
 import io.github.xsocks.ui.MainActivity;
@@ -39,6 +37,9 @@ import io.github.xsocks.ui.XsocksRunnerActivity;
 import io.github.xsocks.utils.ConfigUtils;
 import io.github.xsocks.utils.Constants;
 import io.github.xsocks.utils.Utils;
+import io.github.xsocks.aidl.IXsocksService;
+import io.github.xsocks.aidl.IXsocksServiceCallback;
+
 import rx.schedulers.Schedulers;
 import rx.util.async.Async;
 
@@ -57,6 +58,8 @@ public class XsocksVpnService extends VpnService {
     private Constants.State state = Constants.State.INIT;
     private int callbackCount = 0;
     private final RemoteCallbackList<IXsocksServiceCallback> callbacks = new RemoteCallbackList<>();
+
+    private XsocksVpnThread vpnThread;
 
     private IXsocksService.Stub binder = new IXsocksService.Stub() {
         @Override
@@ -190,7 +193,7 @@ public class XsocksVpnService extends VpnService {
             }
         }
 
-        String cmd = String.format("%sxsocks -s %s:%d -k %s -p %sxsocks.pid -t 600",
+        String cmd = String.format("%sxsocks -s %s:%d -k %s -p %sxsocks.pid -t 600 --vpn -V",
                 Constants.Path.BASE, config.proxy, config.remotePort, config.sitekey,
                 Constants.Path.BASE);
 
@@ -207,7 +210,7 @@ public class XsocksVpnService extends VpnService {
     }
 
     private void startDnsForwarder() {
-        String cmd = String.format("%sxforwarder -l 0.0.0.0:%d -d 8.8.8.8:53 "
+        String cmd = String.format("%sxforwarder -l 0.0.0.0:%d -d 8.8.8.8:53 -V "
                         + "-s %s:%d "
                         + "-k %s "
                         + "-p %sxforwarder.pid",
@@ -257,7 +260,8 @@ public class XsocksVpnService extends VpnService {
     private void route_bypass(Builder builder) {
         String line;
         final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(this.getResources().openRawResource(R.raw.route_bypass)));
+                new InputStreamReader(
+                        this.getResources().openRawResource(R.raw.route_bypass)));
 
         try {
             while ((line = reader.readLine()) != null) {
@@ -266,18 +270,21 @@ public class XsocksVpnService extends VpnService {
                     builder.addRoute(route[0], Integer.parseInt(route[1]));
                 }
             }
+
         } catch (final Throwable t) {
             Log.e(TAG, "", t);
+
         } finally {
             try {
                 reader.close();
+
             } catch (final IOException ioe) {
                 // ignore
             }
         }
     }
 
-    private void startVpn(){
+    private int startVpn(){
         int VPN_MTU = 1500;
         Builder builder = new Builder();
         builder.setSession(config.profileName);
@@ -297,13 +304,6 @@ public class XsocksVpnService extends VpnService {
                             builder.addAllowedApplication(app.getPackageName());
                         }
                     }
-
-                    if (config.isBypassApps) {
-                        builder.addDisallowedApplication(this.getPackageName());
-                    }
-
-                } else {
-                    builder.addDisallowedApplication(this.getPackageName());
                 }
 
             } catch (PackageManager.NameNotFoundException e) {
@@ -323,6 +323,7 @@ public class XsocksVpnService extends VpnService {
         vpnInterface = builder.establish();
         if (vpnInterface == null) {
             Log.e(TAG, "vpn interface is null");
+            return -1;
         }
 
         int fd = vpnInterface.getFd();
@@ -332,7 +333,7 @@ public class XsocksVpnService extends VpnService {
                         + "--socks-server-addr 127.0.0.1:%d "
                         + "--tunfd %d "
                         + "--tunmtu %d "
-                        + "--loglevel 3 "
+                        + "--loglevel 4 "
                         + "--pid %stun2socks.pid",
                 Constants.Path.BASE, "26.26.26.2", config.localPort, fd, VPN_MTU,
                 Constants.Path.BASE);
@@ -343,15 +344,13 @@ public class XsocksVpnService extends VpnService {
             cmd += " --dnsgw 26.26.26.1:" + Integer.toString(pdnsdPort);
         }
 
-        if (Utils.isLollipopOrAbove()) {
-            cmd += " --fake-proc";
-        }
-
         if (BuildConfig.DEBUG) {
             Log.d(TAG, cmd);
         }
 
         io.github.xsocks.System.exec(cmd);
+
+        return fd;
     }
 
     private boolean startDaemons() {
@@ -360,11 +359,30 @@ public class XsocksVpnService extends VpnService {
             startDnsDaemon();
             startDnsForwarder();
         }
-        startVpn();
-        return true;
+
+        int fd = startVpn();
+        if (fd != -1) {
+            int tries = 1;
+            while (tries < 5) {
+                try {
+                    Thread.sleep(1000 * tries);
+                }  catch (InterruptedException e) {
+                    // ignore
+                }
+                if (io.github.xsocks.System.sendfd(fd) != -1) {
+                    return true;
+                }
+                tries++;
+            }
+        }
+
+        return false;
     }
 
     private void startRunner(Config c) {
+        vpnThread = new XsocksVpnThread(this);
+        vpnThread.start();
+
         config = c;
 
         // register close closeReceiver
@@ -420,6 +438,11 @@ public class XsocksVpnService extends VpnService {
     }
 
     private void stopRunner() {
+        if (vpnThread != null) {
+            vpnThread.stopThread();
+            vpnThread = null;
+        }
+
         stopForeground(true);
 
         changeState(Constants.State.STOPPING);
