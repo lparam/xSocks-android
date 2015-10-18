@@ -1,3 +1,9 @@
+v1.4.0 (2015-10-18)
+-----------
+* Feature: Protect VpnService
+* Change: Black list
+
+
 v1.3.0 (2015-10-9)
 -----------
 * Feature: Support ACL
