@@ -11,7 +11,7 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
     defaultConfig {
-        applicationId "io.github.xsocks"
+        applicationId "io.github.xSocks"
         minSdkVersion 18
         targetSdkVersion 23
         versionCode 140
@@ -61,7 +61,7 @@ def appendVersionNameVersionCode(variant, output, defaultConfig) {
         versionName += "-beta"
     }
     def file = output.outputFile
-    output.outputFile = new File(file.parent, "xsocks.apk".replace(".apk", "-v" + versionName + ".apk"))
+    output.outputFile = new File(file.parent, "xSocks.apk".replace(".apk", "-v" + versionName + ".apk"))
 }
 
 dependencies {

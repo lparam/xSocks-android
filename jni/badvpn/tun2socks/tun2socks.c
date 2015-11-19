@@ -408,8 +408,8 @@ int main (int argc, char **argv)
 
     if (options.fake_proc) {
         // Fake process name to cheat on Lollipop
-        strcpy(argv[0], "io.github.xsocks");
-        prctl(PR_SET_NAME, "io.github.xsocks");
+        strcpy(argv[0], "io.github.xSocks");
+        prctl(PR_SET_NAME, "io.github.xSocks");
     }
 
     // handle --help and --version

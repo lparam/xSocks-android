@@ -4,50 +4,50 @@
     <PreferenceCategory
             android:title="@string/proxy_cat">
 
-        <io.github.xsocks.preferences.ProfileEditTextPreference
+        <io.github.xSocks.preferences.ProfileEditTextPreference
                 android:defaultValue="Default"
                 android:key="profileName"
                 android:summary="@string/profile_summary"
                 android:title="@string/profile"
                 android:singleLine="true">
-        </io.github.xsocks.preferences.ProfileEditTextPreference>
-        <io.github.xsocks.preferences.SummaryEditTextPreference
+        </io.github.xSocks.preferences.ProfileEditTextPreference>
+        <io.github.xSocks.preferences.SummaryEditTextPreference
                 android:defaultValue=""
                 android:key="proxy"
                 android:summary="@string/proxy_summary"
                 android:title="@string/proxy"
                 android:singleLine="true">
-        </io.github.xsocks.preferences.SummaryEditTextPreference>
-        <io.github.xsocks.preferences.SummaryEditTextPreference
+        </io.github.xSocks.preferences.SummaryEditTextPreference>
+        <io.github.xSocks.preferences.SummaryEditTextPreference
                 android:inputType="number"
                 android:defaultValue="1073"
                 android:key="remotePort"
                 android:summary="@string/remote_port_summary"
                 android:title="@string/remote_port"
                 android:singleLine="true">
-        </io.github.xsocks.preferences.SummaryEditTextPreference>
-        <io.github.xsocks.preferences.PasswordEditTextPreference
+        </io.github.xSocks.preferences.SummaryEditTextPreference>
+        <io.github.xSocks.preferences.PasswordEditTextPreference
                 android:inputType="textPassword"
                 android:defaultValue=""
                 android:key="sitekey"
                 android:summary="@string/sitekey_summary"
                 android:title="@string/sitekey"
                 android:singleLine="true">
-        </io.github.xsocks.preferences.PasswordEditTextPreference>
+        </io.github.xSocks.preferences.PasswordEditTextPreference>
 
     </PreferenceCategory>
 
     <PreferenceCategory
             android:title="@string/feature_cat">
 
-        <io.github.xsocks.preferences.SummaryListPreference
+        <io.github.xSocks.preferences.SummaryListPreference
                 android:defaultValue="all"
                 android:key="route"
                 android:entries="@array/route_entry"
                 android:entryValues="@array/route_value"
                 android:summary="@string/route_list_summary"
                 android:title="@string/route_list">
-        </io.github.xsocks.preferences.SummaryListPreference>
+        </io.github.xSocks.preferences.SummaryListPreference>
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="isGlobalProxy"

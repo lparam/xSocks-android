@@ -1,6 +1,6 @@
 ## Xsocks for Android
 
-A [xsocks](https://github.com/lparam/xsocks) client for Android.
+A [xSocks](https://github.com/lparam/xSocks) client for Android.
 
 ### PREREQUISITES
 

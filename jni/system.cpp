@@ -1,4 +1,4 @@
-#define LOG_TAG "xsocks"
+#define LOG_TAG "xSocks"
 
 #include "jni.h"
 #include <android/log.h>
@@ -54,7 +54,7 @@ jint Java_io_github_xsocks_system_sendfd(JNIEnv *env, jobject thiz, jint tun_fd)
 
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, "/data/data/io.github.xsocks/sock_path", sizeof(addr.sun_path)-1);
+    strncpy(addr.sun_path, "/data/data/io.github.xSocks/sock_path", sizeof(addr.sun_path)-1);
 
     if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
         LOGE("connect() failed: %s (fd = %d)\n", strerror(errno), fd);
@@ -72,7 +72,7 @@ jint Java_io_github_xsocks_system_sendfd(JNIEnv *env, jobject thiz, jint tun_fd)
     return 0;
 }
 
-static const char *classPathName = "io/github/xsocks/System";
+static const char *classPathName = "io/github/xSocks/System";
 
 static JNINativeMethod method_table[] = {
     { "jniclose", "(I)V",

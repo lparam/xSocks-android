@@ -24,5 +24,5 @@
 -dontwarn com.nostra13.universalimageloader.**
 -keep class com.nostra13.universalimageloader.** { *; }
 
-# xsocks
--keep class io.github.xsocks.model.** { *; }
+# xSocks
+-keep class xSocks.model.** { *; }
