@@ -24,12 +24,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
 import io.github.xSocks.BuildConfig;
 import io.github.xSocks.R;
 import io.github.xSocks.aidl.Config;
+import io.github.xSocks.aidl.IxSocksService;
+import io.github.xSocks.aidl.IxSocksServiceCallback;
 import io.github.xSocks.model.ProxiedApp;
 import io.github.xSocks.ui.AppManagerActivity;
 import io.github.xSocks.ui.MainActivity;
@@ -37,9 +42,6 @@ import io.github.xSocks.ui.xSocksRunnerActivity;
 import io.github.xSocks.utils.ConfigUtils;
 import io.github.xSocks.utils.Constants;
 import io.github.xSocks.utils.Utils;
-import io.github.xSocks.aidl.IxSocksService;
-import io.github.xSocks.aidl.IxSocksServiceCallback;
-
 import rx.schedulers.Schedulers;
 import rx.util.async.Async;
 
@@ -60,6 +62,11 @@ public class xSocksVpnService extends VpnService {
     private final RemoteCallbackList<IxSocksServiceCallback> callbacks = new RemoteCallbackList<>();
 
     private xSocksVpnThread vpnThread;
+
+    private Process pdnsdProcess = null;
+    private Process forwarderProcess = null;
+    private Process xSocksProcess = null;
+    private Process tun2SocksProcess = null;
 
     private IxSocksService.Stub binder = new IxSocksService.Stub() {
         @Override
@@ -147,16 +154,21 @@ public class xSocksVpnService extends VpnService {
     }
 
     private void killProcesses() {
-        for (String task : Constants.executables) {
-            try {
-                String content = Utils.readFromFile(String.format(Locale.ENGLISH, "%s.pid", task));
-                if (!content.isEmpty()) {
-                    int pid = Integer.parseInt(content);
-                    android.os.Process.killProcess(pid);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "unable to kill " + task);
-            }
+        if (pdnsdProcess != null) {
+            pdnsdProcess.destroy();
+            pdnsdProcess = null;
+        }
+        if (forwarderProcess != null) {
+            forwarderProcess.destroy();
+            forwarderProcess = null;
+        }
+        if (xSocksProcess != null) {
+            xSocksProcess.destroy();
+            xSocksProcess = null;
+        }
+        if (tun2SocksProcess != null) {
+            tun2SocksProcess.destroy();
+            tun2SocksProcess = null;
         }
     }
 
@@ -171,7 +183,7 @@ public class xSocksVpnService extends VpnService {
         return sb.toString();
     }
 
-    private void startxSocksDaemon() {
+    private void startxSocksDaemon() throws IOException {
         if (!config.route.equals(Constants.Route.ALL)) {
             InputStream in;
             OutputStream out;
@@ -193,45 +205,55 @@ public class xSocksVpnService extends VpnService {
             }
         }
 
-        String cmd = String.format("%sxSocks -s %s:%d -k %s -p %sxSocks.pid -t 600 --vpn -V",
-                Constants.Path.BASE, config.proxy, config.remotePort, config.sitekey,
-                Constants.Path.BASE);
+        List<String> cmd = new ArrayList<>();
+        cmd.add(Constants.Path.BASE + "xSocks");
+        cmd.add("-s"); cmd.add(config.proxy + ":" + config.remotePort);
+        cmd.add("-k"); cmd.add(config.sitekey);
+        cmd.add("-t"); cmd.add("600");
+        cmd.add("--vpn");
+        cmd.add("-nV");
 
         if (!config.route.equals(Constants.Route.ALL)) {
-            cmd += " --acl ";
-            cmd += Constants.Path.BASE + "acl.list";
+            cmd.add("--acl");
+            cmd.add( Constants.Path.BASE + "acl.list");
         }
 
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, cmd);
+            Log.d(TAG, Arrays.toString(cmd.toArray()));
         }
 
-        io.github.xSocks.System.exec(cmd);
+        xSocksProcess = new ProcessBuilder()
+                .command(cmd)
+                .redirectErrorStream(false)
+                .start();
     }
 
-    private void startDnsForwarder() {
-        String cmd = String.format("%sxForwarder -l 0.0.0.0:%d -d 8.8.8.8:53 -V "
-                        + "-s %s:%d "
-                        + "-k %s "
-                        + "-p %sxForwarder.pid",
-                Constants.Path.BASE, forwarderPort, config.proxy,
-                config.remotePort, config.sitekey, Constants.Path.BASE);
+    private void startDnsForwarder() throws IOException {
+        String[] cmd = {
+                Constants.Path.BASE + "xForwarder",
+                "-l", "0.0.0.0" + ":" + forwarderPort,
+                "-d", "8.8.8.8:53",
+                "-s", config.proxy + ":" + config.remotePort,
+                "-k", config.sitekey,
+                "-n",
+                "-V"
+        };
+
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, cmd);
+            Log.d(TAG, Arrays.toString(cmd));
         }
-        io.github.xSocks.System.exec(cmd);
-    }
 
-    private String getRejectList() {
-        return readFromRaw(R.raw.dns_reject_list);
+        forwarderProcess = new ProcessBuilder()
+                .command(cmd)
+                .redirectErrorStream(false)
+                .start();
     }
 
     private String getBlackList() {
         return readFromRaw(R.raw.dns_black_list);
     }
 
-    private void startDnsDaemon() {
-        String rejectList = getRejectList();
+    private void startDnsDaemon() throws IOException {
         String blackList = getBlackList();
 
         String content;
@@ -248,13 +270,19 @@ public class xSocksVpnService extends VpnService {
 
         ConfigUtils.printToFile(new File(Constants.Path.BASE + "pdnsd.conf"), conf);
 
-        String cmd = Constants.Path.BASE + "pdnsd -c " + Constants.Path.BASE + "pdnsd.conf";
+        String[] cmd = {
+                Constants.Path.BASE + "pdnsd",
+                "-c", Constants.Path.BASE + "pdnsd.conf"
+        };
 
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, cmd);
+            Log.d(TAG, Arrays.toString(cmd));
         }
 
-        io.github.xSocks.System.exec(cmd);
+        pdnsdProcess = new ProcessBuilder()
+                .command(cmd)
+                .redirectErrorStream(false)
+                .start();
     }
 
     private void route_bypass(Builder builder) {
@@ -284,7 +312,7 @@ public class xSocksVpnService extends VpnService {
         }
     }
 
-    private int startVpn(){
+    private int startVpn() throws IOException {
         int VPN_MTU = 1500;
         Builder builder = new Builder();
         builder.setSession(config.profileName);
@@ -328,52 +356,63 @@ public class xSocksVpnService extends VpnService {
 
         int fd = vpnInterface.getFd();
 
-        String cmd = String.format("%stun2socks --netif-ipaddr %s "
-                        + "--netif-netmask 255.255.255.0 "
-                        + "--socks-server-addr 127.0.0.1:%d "
-                        + "--tunfd %d "
-                        + "--tunmtu %d "
-                        + "--loglevel 4 "
-                        + "--pid %stun2socks.pid",
-                Constants.Path.BASE, "26.26.26.2", config.localPort, fd, VPN_MTU,
-                Constants.Path.BASE);
+        List<String> cmd = new ArrayList<>();
+        cmd.add(Constants.Path.BASE + "tun2socks");
+        cmd.add("--netif-ipaddr"); cmd.add("26.26.26.2");
+        cmd.add("--netif-netmask"); cmd.add("255.255.255.0");
+        cmd.add("--socks-server-addr"); cmd.add("127.0.0.1" + ":" + config.localPort);
+        cmd.add("--tunfd"); cmd.add(Integer.toString(fd));
+        cmd.add("--tunmtu"); cmd.add(Integer.toString(VPN_MTU));
+        cmd.add("--loglevel"); cmd.add(Integer.toString(3));
+
 
         if (config.isUdpDns) {
-            cmd += " --enable-udprelay";
+            cmd.add("--enable-udprelay");
         } else {
-            cmd += " --dnsgw 26.26.26.1:" + Integer.toString(pdnsdPort);
+            cmd.add("--dnsgw");
+            cmd.add("26.26.26.1:" + Integer.toString(pdnsdPort));
         }
 
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, cmd);
+            Log.d(TAG, Arrays.toString(cmd.toArray()));
         }
 
-        io.github.xSocks.System.exec(cmd);
+        tun2SocksProcess = new ProcessBuilder()
+                .command(cmd)
+                .redirectErrorStream(false)
+                .start();
 
         return fd;
     }
 
     private boolean startDaemons() {
-        startxSocksDaemon();
-        if (!config.isUdpDns) {
-            startDnsDaemon();
-            startDnsForwarder();
-        }
+        try {
+            startxSocksDaemon();
 
-        int fd = startVpn();
-        if (fd != -1) {
-            int tries = 1;
-            while (tries < 5) {
-                try {
-                    Thread.sleep(1000 * tries);
-                }  catch (InterruptedException e) {
-                    // ignore
-                }
-                if (io.github.xSocks.System.sendfd(fd) != -1) {
-                    return true;
-                }
-                tries++;
+            if (!config.isUdpDns) {
+                startDnsDaemon();
+                startDnsForwarder();
             }
+
+            int fd = startVpn();
+            if (fd != -1) {
+                int tries = 1;
+                while (tries < 5) {
+                    try {
+                        Thread.sleep(1000 * tries);
+                    }  catch (InterruptedException e) {
+                        // ignore
+                    }
+                    if (io.github.xSocks.System.sendfd(fd) != -1) {
+                        return true;
+                    }
+                    tries++;
+                }
+            }
+
+        } catch (IOException e) {
+            Log.e(TAG, "Got " + e.getMessage());
+            return false;
         }
 
         return false;
