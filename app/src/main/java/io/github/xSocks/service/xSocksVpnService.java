@@ -210,10 +210,10 @@ public class xSocksVpnService extends VpnService {
     }
 
     private void startDnsForwarder() {
-        String cmd = String.format("%sxforwarder -l 0.0.0.0:%d -d 8.8.8.8:53 -V "
+        String cmd = String.format("%sxForwarder -l 0.0.0.0:%d -d 8.8.8.8:53 -V "
                         + "-s %s:%d "
                         + "-k %s "
-                        + "-p %sxforwarder.pid",
+                        + "-p %sxForwarder.pid",
                 Constants.Path.BASE, forwarderPort, config.proxy,
                 config.remotePort, config.sitekey, Constants.Path.BASE);
         if (BuildConfig.DEBUG) {

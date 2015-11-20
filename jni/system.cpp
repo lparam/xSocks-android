@@ -14,11 +14,14 @@
 #include <sys/socket.h>
 #include <ancillary.h>
 
+
 #define LOGI(...) do { __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__); } while(0)
 #define LOGW(...) do { __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__); } while(0)
 #define LOGE(...) do { __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__); } while(0)
 
-jstring Java_io_github_xsocks_system_getabi(JNIEnv *env, jobject thiz) {
+
+static jstring
+getABI(JNIEnv *env, jobject thiz) {
     AndroidCpuFamily family = android_getCpuFamily();
     uint64_t features = android_getCpuFeatures();
     const char *abi;
@@ -33,17 +36,20 @@ jstring Java_io_github_xsocks_system_getabi(JNIEnv *env, jobject thiz) {
     return env->NewStringUTF(abi);
 }
 
-void Java_io_github_xsocks_system_exec(JNIEnv *env, jobject thiz, jstring cmd) {
-    const char *str  = env->GetStringUTFChars(cmd, 0);
+static void
+exec(JNIEnv *env, jobject thiz, jstring cmd) {
+    const char *str = env->GetStringUTFChars(cmd, 0);
     system(str);
     env->ReleaseStringUTFChars(cmd, str);
 }
 
-void Java_io_github_xsocks_system_jniclose(JNIEnv *env, jobject thiz, jint fd) {
+static void
+jniclose(JNIEnv *env, jobject thiz, jint fd) {
     close(fd);
 }
 
-jint Java_io_github_xsocks_system_sendfd(JNIEnv *env, jobject thiz, jint tun_fd) {
+static jint
+sendfd(JNIEnv *env, jobject thiz, jint tun_fd) {
     int fd;
     struct sockaddr_un addr;
 
@@ -69,26 +75,24 @@ jint Java_io_github_xsocks_system_sendfd(JNIEnv *env, jobject thiz, jint tun_fd)
     }
 
     close(fd);
+
     return 0;
 }
 
 static const char *classPathName = "io/github/xSocks/System";
-
 static JNINativeMethod method_table[] = {
     { "jniclose", "(I)V",
-        (void*) Java_io_github_xsocks_system_jniclose },
+        (void*) jniclose },
     { "sendfd", "(I)I",
-        (void*) Java_io_github_xsocks_system_sendfd },
+        (void*) sendfd },
     { "exec", "(Ljava/lang/String;)V",
-        (void*) Java_io_github_xsocks_system_exec },
+        (void*) exec },
     { "getABI", "()Ljava/lang/String;",
-        (void*) Java_io_github_xsocks_system_getabi }
+        (void*) getABI }
 };
 
-/*
- * Register several native methods for one class.
- */
-static int registerNativeMethods(JNIEnv* env, const char* className,
+static int
+registerNativeMethods(JNIEnv* env, const char* className,
     JNINativeMethod* gMethods, int numMethods) {
     jclass clazz;
 
@@ -105,12 +109,8 @@ static int registerNativeMethods(JNIEnv* env, const char* className,
     return JNI_TRUE;
 }
 
-/*
- * Register native methods for all classes we know about.
- *
- * returns JNI_TRUE on success.
- */
-static int registerNatives(JNIEnv* env) {
+static int
+registerNatives(JNIEnv* env) {
     if (!registerNativeMethods(env, classPathName, method_table,
           sizeof(method_table) / sizeof(method_table[0]))) {
         return JNI_FALSE;
@@ -119,16 +119,13 @@ static int registerNatives(JNIEnv* env) {
     return JNI_TRUE;
 }
 
-/*
- * This is called by the VM when the shared library is first loaded.
- */
-
 typedef union {
     JNIEnv* env;
     void* venv;
 } UnionJNIEnvToVoid;
 
-jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+jint
+JNI_OnLoad(JavaVM* vm, void* reserved) {
     UnionJNIEnvToVoid uenv;
     uenv.venv = NULL;
     jint result = -1;

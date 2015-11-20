@@ -501,7 +501,7 @@ int main (int argc, char **argv)
         goto fail2;
     }
 
-    char *path = "/data/data/io.github.xsocks/sock_path";
+    char *path = "/data/data/io.github.xSocks/sock_path";
     unlink(path);
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;

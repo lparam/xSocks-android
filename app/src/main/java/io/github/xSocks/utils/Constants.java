@@ -19,7 +19,7 @@ public class Constants {
         }
     }
 
-    public static String[] executables = {"xSocks", "xforwarder", "pdnsd", "tun2socks"};
+    public static String[] executables = {"xSocks", "xForwarder", "pdnsd", "tun2socks"};
 
     public class Path {
         public static final String BASE = "/data/data/io.github.xSocks/";
