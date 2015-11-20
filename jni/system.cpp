@@ -60,7 +60,7 @@ sendfd(JNIEnv *env, jobject thiz, jint tun_fd) {
 
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, "/data/data/io.github.xSocks/sock_path", sizeof(addr.sun_path)-1);
+    strncpy(addr.sun_path, "/data/data/io.github.xSocks/sock_path", sizeof(addr.sun_path) -1);
 
     if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
         LOGE("connect() failed: %s (fd = %d)\n", strerror(errno), fd);
@@ -125,11 +125,11 @@ typedef union {
 } UnionJNIEnvToVoid;
 
 jint
-JNI_OnLoad(JavaVM* vm, void* reserved) {
+JNI_OnLoad(JavaVM *vm, void *reserved) {
     UnionJNIEnvToVoid uenv;
     uenv.venv = NULL;
     jint result = -1;
-    JNIEnv* env = NULL;
+    JNIEnv *env = NULL;
 
     LOGI("JNI_OnLoad");
 

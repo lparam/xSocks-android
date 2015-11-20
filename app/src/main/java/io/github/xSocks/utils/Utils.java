@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import io.github.xSocks.BuildConfig;
 
 public class Utils {
-    private static String TAG = "Xsocks";
+    private static String TAG = "xSocks";
 
     public static boolean isLollipopOrAbove() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;

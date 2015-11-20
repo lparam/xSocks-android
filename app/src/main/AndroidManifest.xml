@@ -51,7 +51,7 @@
         </activity>
 
         <service
-            android:name="io.github.xSocks.service.XsocksVpnService"
+            android:name="io.github.xSocks.service.xSocksVpnService"
             android:enabled="true"
             android:exported="false"
             android:label="@string/app_name"

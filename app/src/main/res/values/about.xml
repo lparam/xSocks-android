@@ -2,7 +2,7 @@
 <resources>
     <string name="about_description_text" translatable="false">
         <![CDATA[
-<p>A <a href="https://github.com/lparam/xsocks">xsocks</a> client for Android.</p>
+<p>A <a href="https://github.com/lparam/xSocks">xSocks</a> client for Android.</p>
 <p>Copyright (C) 2015 lparam</p>
 <p>This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
