@@ -173,10 +173,8 @@ public class AppManagerActivity extends RxAppCompatActivity
                 String userName = Integer.toString(a.uid);
                 int index = Arrays.binarySearch(appString, userName);
                 boolean proxied = index >= 0;
-                if (a.uid == 10060 || a.uid == 10058) {
-                    Log.d("test", "hello");
-                }
-                ProxiedApp app = new ProxiedApp(a.uid, name, a.packageName, proxied);
+                // trim no-break space
+                ProxiedApp app = new ProxiedApp(a.uid, name.replace("\u00A0",""), a.packageName, proxied);
                 appList.add(app);
             }
         }
