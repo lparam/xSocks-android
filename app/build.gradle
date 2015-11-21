@@ -14,8 +14,8 @@ android {
         applicationId "io.github.xSocks"
         minSdkVersion 18
         targetSdkVersion 23
-        versionCode 140
-        versionName '1.4.0'
+        versionCode 150
+        versionName '1.5.0'
     }
     lintOptions {
         abortOnError true
