@@ -1,3 +1,8 @@
+v1.5.0 (2015-10-21)
+-----------
+* Change: rename program
+
+
 v1.4.0 (2015-10-18)
 -----------
 * Feature: Protect VpnService

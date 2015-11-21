@@ -15,7 +15,7 @@ $(LIB_SYSTEM): jni/system.cpp jni/Android.mk
 		echo ANDROID_NDK_HOME is not set ;\
 		exit 1 ;\
 	fi ;\
-	pushd jni/xsocks || exit 1 ;\
+	pushd jni/xSocks || exit 1 ;\
 	dist-build/android-x86.sh || exit 1 ;\
 	dist-build/android-armv7-a.sh || exit 1 ;\
 	popd ;\
@@ -34,7 +34,7 @@ $(LIB_SYSTEM): jni/system.cpp jni/Android.mk
 	install libs/armeabi-v7a/pdnsd app/src/main/assets/armeabi-v7a ;\
 	install libs/armeabi-v7a/tun2socks app/src/main/assets/armeabi-v7a ;\
 	install libs/armeabi-v7a/libsystem.so app/src/main/jniLibs/armeabi-v7a ;\
-	install jni/xsocks/xsocks-android-i686/xsocks app/src/main/assets/x86 ;\
-	install jni/xsocks/xsocks-android-i686/xforwarder app/src/main/assets/x86 ;\
-	install jni/xsocks/xsocks-android-armv7-a/xsocks app/src/main/assets/armeabi-v7a ;\
-	install jni/xsocks/xsocks-android-armv7-a/xforwarder app/src/main/assets/armeabi-v7a ;
+	install jni/xSocks/xSocks-android-i686/xSocks app/src/main/assets/x86 ;\
+	install jni/xSocks/xSocks-android-i686/xForwarder app/src/main/assets/x86 ;\
+	install jni/xSocks/xSocks-android-armv7-a/xSocks app/src/main/assets/armeabi-v7a ;\
+	install jni/xSocks/xSocks-android-armv7-a/xForwarder app/src/main/assets/armeabi-v7a ;

@@ -1,4 +1,3 @@
-[submodule "jni/xsocks"]
-    path = jni/xsocks
-    url = https://github.com/lparam/xsocks.git
-    ignore = dirty
+[submodule "jni/xSocks"]
+	path = jni/xSocks
+	url = https://github.com/lparam/xSocks.git

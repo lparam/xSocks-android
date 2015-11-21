@@ -408,8 +408,8 @@ int main (int argc, char **argv)
 
     if (options.fake_proc) {
         // Fake process name to cheat on Lollipop
-        strcpy(argv[0], "io.github.xsocks");
-        prctl(PR_SET_NAME, "io.github.xsocks");
+        strcpy(argv[0], "io.github.xSocks");
+        prctl(PR_SET_NAME, "io.github.xSocks");
     }
 
     // handle --help and --version
@@ -501,7 +501,7 @@ int main (int argc, char **argv)
         goto fail2;
     }
 
-    char *path = "/data/data/io.github.xsocks/sock_path";
+    char *path = "/data/data/io.github.xSocks/sock_path";
     unlink(path);
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
